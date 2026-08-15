@@ -17,8 +17,10 @@ data/processed/*
 *.npz
 
 # Results
-results/*
-!results/.gitkeep
+# Kết quả nhỏ được phép push
+results/**/*.npz
+results/**/*.pkl
+results/**/*.joblib
 
 # LaTeX build files
 *.aux

@@ -9,7 +9,7 @@ Dataset 2 được **đọc trực tiếp từ file ZIP**, không cần và khô
 
 ## 1. Mở project
 
-Giải nén project và mở chính folder `stroke_project_vntex` bằng VS Code.
+Giải nén project và mở chính folder `qh25_data_mining` bằng VS Code.
 
 ```text
 stroke_project_vntex/
