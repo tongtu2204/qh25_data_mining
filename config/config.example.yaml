@@ -1,0 +1,17 @@
+# Copy file này thành config/config.yaml rồi sửa hai đường dẫn dữ liệu cho máy của bạn.
+# Có thể dùng đường dẫn tuyệt đối hoặc tương đối. Trên Windows nên dùng dấu / như ví dụ dưới.
+
+data_raw_source:
+  dataset1: 'C:/PATH/TO/healthcare-dataset-stroke-data.csv'
+  dataset2: 'C:/PATH/TO/healthcare_data_2GB.csv.zip'
+
+processed_data:
+  dataset1: 'data/processed/dataset1_train_test.npz'
+  dataset2: 'data/processed/dataset2_train_test.npz'
+
+output_dir: 'results'
+
+experiment:
+  test_size: 0.20
+  random_state: 42
+  pca_variance: 0.95

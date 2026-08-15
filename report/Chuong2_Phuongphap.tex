@@ -1,0 +1,81 @@
+\chapter{PHƯƠNG PHÁP}
+Giả sử có tập dữ liệu
+\[
+D=\{(x_i,y_i)\},\quad i=1,\ldots,N,
+\]
+gồm các cặp $(x_i,y_i)$, trong đó $x_i\in\mathbb{R}^d$ là vector các đặc trưng đầu vào của bệnh nhân, $y_i\in\{0,1\}$ là biến nhị phân, với 1 biểu thị có đột quỵ và 0 biểu thị không đột quỵ; $N$ là số bản ghi và $d$ là số đặc trưng đầu vào. Biến mục tiêu $y_i$ được sử dụng để huấn luyện và kiểm thử mô hình học máy.
+
+Dưới đây chúng tôi mô tả phương pháp đề xuất.
+
+Trước khi xử lý dữ liệu, kiểm tra bản ghi trùng được thực hiện nhằm bảo đảm tính duy nhất của tập dữ liệu và tránh làm sai lệch kết quả mô hình do các mẫu lặp, nhưng không tìm thấy bản ghi trùng. Các giá trị thiếu được khảo sát và chỉ xuất hiện ở cột BMI, sau đó được điền bằng giá trị trung bình. Cách này ngăn mô hình bị ảnh hưởng bởi dữ liệu không đầy đủ, bởi missing có thể gây thiên lệch và kết luận không chính xác nếu không được xử lý phù hợp. Việc điền giá trị trung bình giúp duy trì phân bố của cột và tính nhất quán của dữ liệu. Ngoài ra, kiểm tra ngoại lệ được thực hiện bằng các phương pháp trực quan như boxplot, cùng với phương pháp khoảng tứ phân vị (IQR). Các giá trị nằm ngoài 1,5 lần IQR tính từ các tứ phân vị được xác định là bất thường và được thay bằng giá trị biên tương ứng. Những điều chỉnh này được thực hiện để bảo đảm tính nhất quán của dữ liệu và ngăn các bất thường làm sai lệch kết quả mô hình.
+
+Phân tích dữ liệu khám phá (EDA) [28] được sử dụng để phân tích sơ bộ và xác định các vấn đề tiềm ẩn, chẳng hạn mất cân bằng lớp và dữ liệu thiếu, có thể ảnh hưởng tiêu cực đến mô hình.
+
+Dữ liệu được tâm hóa bằng cách xây dựng ma trận
+\[
+X_{\text{centered}} = X-\bar{x},
+\qquad
+\bar{x}=\frac{1}{N}\sum_{i=1}^{N}x_i,
+\]
+trong đó $\bar{x}$ là vector giá trị trung bình.
+
+Ma trận hiệp phương sai $S$ được tính như sau:
+\[
+S=\frac{1}{N-1}X_{\text{centered}}^{T}X_{\text{centered}}.
+\]
+
+Các trị riêng và vector riêng của ma trận hiệp phương sai $S$ được tính bằng phương pháp Jacobi, được song song hóa bằng OpenMP để tăng tốc:
+\[
+Sv_j=\lambda_jv_j,
+\]
+trong đó $\lambda_j$ là các trị riêng và $v_j$ là các vector riêng.
+
+Để giảm chiều, $k$ vector riêng lớn nhất $V_k$ được chọn, sau đó dữ liệu được biến đổi thành ma trận đặc trưng mới:
+\[
+X_{\text{reduced}}=X_{\text{centered}}V_k.
+\]
+
+Ma trận đặc trưng $X_{\text{reduced}}$ được đưa vào thuật toán XGBoost. Hàm mục tiêu của mô hình có dạng:
+\[
+L(\theta)=\sum_{i=1}^{N}\ell\left(y_i,\hat y_i(\theta)\right)+\Omega(\theta),
+\]
+trong đó
+\[
+\ell(y_i,\hat y_i)=-\left[y_i\log(\hat y_i)+(1-y_i)\log(1-\hat y_i)\right]
+\]
+là hàm mất mát logistic, $\hat y_i(\theta)$ là dự báo của mô hình, $\theta$ là các tham số mô hình và $\Omega(\theta)$ là thành phần regularization.
+
+Để tối ưu hiệu năng mô hình, chúng tôi sử dụng Grid Search để điều chỉnh siêu tham số. Quy trình này tìm kiếm có hệ thống trên một tập siêu tham số xác định trước nhằm tối thiểu hóa hàm mất mát và cải thiện độ chính xác. Trong trường hợp này, các siêu tham số của XGBoost được điều chỉnh gồm độ sâu cây, learning rate, số lượng cây, gamma (regularization), minimum child weight, tỷ lệ dữ liệu huấn luyện và tỷ lệ đặc trưng. Mô hình được đánh giá bằng ROC-AUC, phù hợp với bài toán phân loại nhị phân và cho biết khả năng phân biệt giữa các lớp. Mục tiêu là tìm sự cân bằng tối ưu giữa độ chính xác huấn luyện và khả năng khái quát hóa, ngăn overfitting trong khi cải thiện hiệu năng mô hình.
+
+Các phương pháp cân bằng sau được sử dụng:
+\begin{itemize}
+  \item Undersampling để giảm số lượng mẫu của lớp chiếm ưu thế.
+  \item Oversampling bằng SMOTE (Synthetic Minority Over-sampling Technique) [29] để sinh các mẫu tổng hợp cho lớp ít đại diện hơn.
+\end{itemize}
+
+Để diễn giải dự báo của mô hình, chúng tôi sử dụng phương pháp SHAP [30], ước lượng đóng góp của từng đặc trưng $j$ vào dự báo của từng mẫu $i$:
+\[
+\operatorname{SHAP}_{j}(x_i)=\phi_j(x_i),
+\]
+trong đó $\phi_j(x_i)$ là giá trị SHAP thể hiện đóng góp của đặc trưng $j$ vào dự báo cho mẫu $i$. Ở đây $i$ là chỉ số của các mẫu riêng lẻ trong tập dữ liệu, $i=1,2,\ldots,N$, và $N$ là số bản ghi; $j$ là chỉ số của các đặc trưng riêng lẻ, $j=1,2,\ldots,d$, với $d$ là số đặc trưng đầu vào của mỗi bệnh nhân. Trong phân tích của chúng tôi, SHAP được áp dụng cho các đặc trưng gốc chứ không phải các thành phần chính, nhằm duy trì khả năng diễn giải dự báo mô hình theo các biến đầu vào ban đầu.
+
+Hình~\ref{fig:flow} minh họa phương pháp trên. Thuật toán 1 mô tả cách triển khai tìm trị riêng và vector riêng bằng thuật toán quay Jacobi sử dụng OpenMP.
+
+\paperfig[0.58\linewidth]{figures_original/fig-005.jpg}{Sơ đồ luồng của phương pháp đề xuất.\label{fig:flow}}
+
+\subsection*{Thuật toán 1: Tính trị riêng và vector riêng song song}
+Thuật toán 1 trong bài báo trình bày phép quay Jacobi song song. Ma trận đầu vào được khởi tạo cùng ma trận vector riêng, sau đó lặp cho đến khi hội tụ hoặc đạt số vòng lặp tối đa. Ở mỗi vòng lặp, thuật toán tìm phần tử ngoài đường chéo có trị tuyệt đối lớn nhất, tính góc quay Jacobi, cập nhật ma trận và vector riêng, đồng thời sử dụng các chỉ thị \texttt{\#pragma omp} để song song hóa những vòng lặp độc lập. Các vùng tới hạn được dùng khi nhiều luồng có khả năng cập nhật chung một biến. Sau hội tụ, các phần tử đường chéo của ma trận chứa các trị riêng và ma trận tích lũy chứa các vector riêng. Phần thuật toán được giữ nguyên về logic như trong bài báo gốc; hình ảnh thuật toán gốc nằm trên cùng trang với Hình 1.
+
+Trong triển khai xử lý song song của thuật toán Jacobi (xem Thuật toán 1), các chỉ thị OpenMP (\texttt{\#pragma omp}) được sử dụng để song song hóa các giai đoạn chính khi tính trị riêng, nhờ đó tăng hiệu năng do nhiều luồng có thể được thực thi đồng thời. Các vùng critical được sử dụng để bảo đảm cập nhật an toàn các biến dùng chung có thể bị thay đổi bởi nhiều luồng cùng lúc, ngăn race condition. Ngoài ra, thuật toán kiểm tra hội tụ bằng cách theo dõi ngưỡng chính xác \texttt{eps}, cho phép thoát hiệu quả khỏi vòng lặp khi đạt độ chính xác mong muốn.
+
+Việc lựa chọn phương pháp Jacobi để tính trị riêng và vector riêng xuất phát từ tính phù hợp của nó đối với song song hóa khi làm việc với các tập dữ liệu nhiều chiều, điều đặc biệt liên quan đến các mô hình dự đoán nguy cơ đột quỵ nơi hiệu quả tính toán là yếu tố then chốt. Như được nêu trong bài báo, tính lặp của phương pháp Jacobi và sự phụ thuộc của nó vào các phép biến đổi ma trận khiến nó rất phù hợp với triển khai OpenMP. Điều này cho phép tận dụng hiệu quả các kiến trúc đa lõi hiện đại và tăng tốc đáng kể quá trình tính toán. Ngoài ra, đặc tính hội tụ của thuật toán kết hợp với khả năng xử lý song song của OpenMP giúp chi phí tính toán vẫn hợp lý ngay cả đối với các tập dữ liệu lớn. Mặc dù các phương pháp thay thế như phân rã QR hoặc power iteration cũng có thể hiệu quả, phương pháp Jacobi được chọn vì tính đơn giản và khả năng cân bằng giữa độ chính xác và hiệu năng. Trong nghiên cứu tương lai, chúng tôi dự định xem xét các phương pháp thay thế này và so sánh với Jacobi để xác định cách tiếp cận hiệu quả nhất tùy thuộc vào điều kiện và đặc trưng của từng tập dữ liệu.
+
+Triển khai PCA bằng OpenMP cải thiện đáng kể tốc độ xử lý các tập dữ liệu lớn bằng cách song song hóa các bước then chốt như tính trị riêng và các vector của ma trận hiệp phương sai. Việc thực hiện song song các phép toán như quay Jacobi phân phối tải trên nhiều luồng, làm giảm đáng kể thời gian thực thi. Kiểm tra hội tụ bằng ngưỡng chính xác \texttt{eps} bảo đảm độ chính xác yêu cầu. OpenMP cho phép sử dụng hiệu quả kiến trúc đa lõi, qua đó giảm thời gian tính toán. Điều này làm cho PCA dựa trên OpenMP đặc biệt hữu ích trong các ứng dụng cần tốc độ và độ chính xác, nhất là y tế và các lĩnh vực nhạy cảm về thời gian.
+
+Như vậy, bài báo trình bày một mô hình dựa trên XGBoost, thực hiện giảm chiều bằng PCA và diễn giải kết quả thông qua SHAP. Mô hình không chỉ đạt độ chính xác cao khi dự đoán nguy cơ đột quỵ mà còn cho phép giải thích quyết định dựa trên đóng góp của từng đặc trưng. Điều này quan trọng đối với thực hành y khoa vì cho phép bác sĩ hiểu các yếu tố khác nhau tác động thế nào đến nguy cơ đột quỵ.
+
+XGBoost được lựa chọn vì độ tin cậy trên các tập dữ liệu mất cân bằng, nơi các trường hợp thuộc lớp thiểu số xuất hiện phổ biến như trong bài toán này. Khả năng regularization của XGBoost giảm overfitting hiệu quả trong khi vẫn duy trì độ chính xác cao trong phân loại nhị phân. Thuật toán phù hợp để xử lý các tập dữ liệu y tế lớn có mẫu phức tạp nhờ tính mở rộng và hiệu quả.
+
+SHAP được sử dụng để diễn giải dự báo mô hình; nó cung cấp cách diễn giải theo các biến có ý nghĩa lâm sàng. Điều này tăng niềm tin và tính hữu dụng, cho phép bác sĩ đưa ra quyết định có cơ sở dựa trên giải thích của mô hình.
+
+PCA thiết yếu đối với việc giảm chiều dữ liệu y tế nhiều chiều, giữ lại thông tin quan trọng nhất đồng thời loại bỏ dư thừa và nhiễu. Điều này tăng hiệu quả tính toán, giảm nguy cơ overfitting và cải thiện hiệu năng dự báo đột quỵ.

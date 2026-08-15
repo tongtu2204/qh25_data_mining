@@ -1,0 +1,200 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{Liberation Sans}}
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{Liberation Serif}}
+\usefonttheme{professionalfonts}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\usetheme{Madrid}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\newcommand{\figmaybe}[2]{%
+  \IfFileExists{#1}{\includegraphics[width=#2]{#1}}{\fbox{\parbox[c][0.42\textheight][c]{#2}{\centering Chạy code để sinh hình\\\texttt{\detokenize{#1}}}}}
+}
+
+\title{Dự đoán nguy cơ đột quỵ bằng XGBoost, PCA và XAI}
+\subtitle{Tái hiện nghiên cứu Mochurad et al. (2025)}
+\author{Nhóm thực hiện}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{1. Bài toán và động cơ}
+\begin{itemize}
+  \item Mục tiêu: dự đoán sớm nguy cơ đột quỵ từ đặc trưng bệnh nhân.
+  \item Khó khăn: \textbf{mất cân bằng lớp}, missing/outlier, quan hệ phi tuyến, yêu cầu giải thích.
+  \item Hướng của bài báo: \textbf{XGBoost + PCA + SHAP}; PCA được tối ưu bằng OpenMP.
+\end{itemize}
+\begin{block}{Ba tiêu chí chính}
+Độ chính xác \quad + \quad tốc độ xử lý \quad + \quad khả năng giải thích.
+\end{block}
+\end{frame}
+
+\begin{frame}{2. Hai bộ dữ liệu}
+\small
+\begin{tabular}{p{0.24\linewidth}p{0.20\linewidth}p{0.48\linewidth}}
+\toprule
+\textbf{Bộ dữ liệu} & \textbf{Quy mô} & \textbf{Đặc trưng chính}\\\midrule
+Dataset 1 & 5.110 bản ghi; 249 stroke & age, hypertension, heart disease, glucose, BMI, smoking, work type, gender, residence\\
+Dataset 2 & 5.769.190 bản ghi & Cấu trúc tương tự, dữ liệu tổng hợp quy mô lớn\\
+\bottomrule
+\end{tabular}
+\vspace{0.5em}
+\begin{itemize}
+  \item Dataset 1: cân bằng bằng \textbf{SMOTE}.
+  \item Dataset 2: cân bằng bằng \textbf{undersampling}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3. Pipeline của nghiên cứu}
+\centering
+\begin{minipage}{0.84\linewidth}
+\begin{enumerate}
+  \item Làm sạch, missing, outlier, one-hot encoding.
+  \item Chuẩn hóa dữ liệu.
+  \item Cân bằng lớp trên tập train.
+  \item PCA giữ $\ge 95\%$ phương sai.
+  \item XGBoost + tuning hyperparameter.
+  \item Đánh giá: Accuracy, Precision, Recall, F1, ROC-AUC, MCC, Kappa.
+  \item XAI bằng SHAP.
+\end{enumerate}
+\end{minipage}
+\end{frame}
+
+\begin{frame}{4. PCA: giảm chiều}
+\[
+X_c=X-\bar{x},\qquad
+S=\frac{1}{N-1}X_c^TX_c,
+\]
+\[
+Sv_j=\lambda_jv_j,\qquad X_{\text{reduced}}=X_cV_k.
+\]
+\begin{itemize}
+  \item Chọn $k$ sao cho cumulative explained variance đạt 95\%.
+  \item Theo bài báo Dataset 1: từ \textbf{19} đặc trưng sau xử lý xuống \textbf{13} thành phần.
+  \item Jacobi rotation được song song hóa bằng OpenMP.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{5. XGBoost và hàm mục tiêu}
+\[
+L(\theta)=\sum_{i=1}^{N}\ell(y_i,\hat y_i(\theta))+\Omega(\theta)
+\]
+\[
+\ell(y_i,\hat y_i)=-\big[y_i\log\hat y_i+(1-y_i)\log(1-\hat y_i)\big].
+\]
+\begin{itemize}
+  \item Tuning: depth, learning rate, số cây, gamma, min child weight, subsample, colsample.
+  \item Regularization giúp kiểm soát overfitting.
+  \item ROC-AUC là tiêu chí quan trọng khi lựa chọn mô hình.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{6. Kết quả PCA cần tái hiện}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\centering
+\figmaybe{../results/dataset1/balanced_pca95_cumulative_variance.png}{0.95\linewidth}
+\column{0.5\textwidth}
+\centering
+\figmaybe{../results/dataset1/balanced_pca95_scree_plot.png}{0.95\linewidth}
+\end{columns}
+\end{frame}
+
+\begin{frame}{7. Kết quả Dataset 1 trong bài báo}
+\begin{columns}[T]
+\column{0.47\textwidth}
+\begin{itemize}
+  \item Accuracy: \textbf{95\%}.
+  \item ROC-AUC trên hình: khoảng \textbf{0.99}.
+  \item 10-fold average accuracy: \textbf{0.9532}.
+  \item Confusion matrix: $TN=908$, $FP=68$, $FN=33$, $TP=935$.
+\end{itemize}
+\column{0.53\textwidth}
+\centering
+\figmaybe{../results/dataset1/balanced_pca95_confusion_matrix.png}{0.92\linewidth}
+\end{columns}
+\end{frame}
+
+\begin{frame}{8. Kết quả Dataset 2 trong bài báo}
+\small
+\begin{tabular}{lcc}\toprule
+\textbf{Chỉ số} & \textbf{Không PCA} & \textbf{Có PCA}\\\midrule
+Accuracy & 0.95 & \textbf{0.98}\\
+F1 class 0 & 0.95 & \textbf{0.98}\\
+F1 class 1 & 0.96 & \textbf{0.98}\\
+\bottomrule\end{tabular}
+\vspace{0.5em}
+\begin{itemize}
+  \item 10-fold CV mean: \textbf{0.99028}.
+  \item MCC: \textbf{0.9634}; Cohen's Kappa: \textbf{0.9632}.
+  \item Confusion matrix có PCA: $TN=6901$, $FP=160$, $FN=71$, $TP=7013$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{9. SHAP: mô hình dự đoán dựa vào đâu?}
+\begin{columns}[T]
+\column{0.46\textwidth}
+\begin{itemize}
+  \item Dataset 1: glucose, work type, BMI, age nổi bật.
+  \item Dataset 2: age và glucose nổi bật nhất.
+  \item Waterfall: giải thích từng quan sát.
+  \item Bar/Beeswarm: giải thích toàn cục.
+\end{itemize}
+\column{0.54\textwidth}
+\centering
+\figmaybe{../results/dataset1/balanced_no_pca_shap_bar.png}{0.93\linewidth}
+\end{columns}
+\end{frame}
+
+\begin{frame}{10. OpenMP và tốc độ}
+\small
+\begin{tabular}{lrrrrr}\toprule
+\textbf{Ma trận} & 100 & 200 & 300 & 400 & 500\\\midrule
+OpenMP & 0.503 & 5.838 & 40.043 & 128.957 & 363.385\\
+Sequential & 0.530 & 7.747 & 62.958 & 218.853 & 549.275\\
+\bottomrule\end{tabular}
+\vspace{0.7em}
+\begin{itemize}
+  \item Dataset nhỏ: overhead song song hóa làm lợi ích hạn chế.
+  \item Ma trận lớn: khoảng cách thời gian tăng rõ rệt.
+  \item Bài báo báo tổng thời gian 1.50010 s so với 4.52611 s ở công trình tham chiếu.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{11. Thiết kế code tái hiện}
+\begin{itemize}
+  \item Train/test = 80/20, stratified.
+  \item IQR bounds học từ train rồi áp cho test.
+  \item Sampler nằm trong \texttt{imblearn.Pipeline} → tránh leakage.
+  \item So sánh: unbalanced/no-PCA, balanced/no-PCA, balanced/PCA95.
+  \item Xuất tự động: metrics, classification report, confusion matrix, ROC, PCA, loadings, SHAP.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{12. Kết luận}
+\begin{itemize}
+  \item XGBoost + PCA + XAI là pipeline hợp lý cho bài toán dự đoán đột quỵ.
+  \item PCA có thể giảm chiều và tăng tốc, nhưng lợi ích phụ thuộc quy mô dữ liệu.
+  \item SHAP giúp diễn giải nhưng không thay thế kiểm định lâm sàng.
+  \item Mục tiêu thực nghiệm: \textbf{tái hiện và đối chiếu}, không giả định sẽ khớp tuyệt đối số liệu bài báo.
+\end{itemize}
+\end{frame}
+
+\end{document}

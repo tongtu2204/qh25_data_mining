@@ -1,0 +1,37 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "xelatex-vntex",
+      "command": "xelatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "latexmk-xelatex-vntex",
+      "command": "latexmk",
+      "args": [
+        "-xelatex",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "%DOC%"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "vntex: XeLaTeX",
+      "tools": ["xelatex-vntex", "xelatex-vntex"]
+    },
+    {
+      "name": "vntex: latexmk XeLaTeX",
+      "tools": ["latexmk-xelatex-vntex"]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "lastUsed",
+  "latex-workshop.view.pdf.viewer": "tab"
+}
