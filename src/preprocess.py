@@ -1,24 +1,58 @@
-from __future__ import annotations
-
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-TARGET_CANDIDATES = ["stroke", "Stroke", "diagnosis", "Diagnosis", "target", "Target"]
-ID_CANDIDATES = ["id", "ID", "Id"]
-BINARY_LIKE = ["hypertension", "heart_disease", "stroke"]
 
-# Dtype tối ưu để Dataset 2 (~5.77 triệu dòng) có thể đọc trực tiếp từ ZIP
-# mà không cần giải nén ra ổ đĩa và giảm đáng kể RAM so với dtype mặc định.
-STROKE_DTYPES = {
-    "id": "float32",
+TARGET = "stroke"
+
+CATEGORICAL_COLS = [
+    "gender",
+    "ever_married",
+    "work_type",
+    "Residence_type",
+    "smoking_status",
+]
+
+BINARY_FEATURE_COLS = [
+    "hypertension",
+    "heart_disease",
+]
+
+BINARY_COLS = BINARY_FEATURE_COLS + [TARGET]
+
+NUMERIC_COLS = [
+    "age",
+    "avg_glucose_level",
+    "bmi",
+]
+
+FEATURE_COLS = (
+    NUMERIC_COLS
+    + BINARY_FEATURE_COLS
+    + CATEGORICAL_COLS
+)
+
+
+DTYPE_DATASET1 = {
+    "gender": "category",
+    "age": "float32",
+    "hypertension": "int8",
+    "heart_disease": "int8",
+    "ever_married": "category",
+    "work_type": "category",
+    "Residence_type": "category",
+    "avg_glucose_level": "float32",
+    "bmi": "float32",
+    "smoking_status": "category",
+    "stroke": "int8",
+}
+
+
+DTYPE_DATASET2 = {
     "gender": "category",
     "age": "float32",
     "hypertension": "float32",
@@ -33,130 +67,346 @@ STROKE_DTYPES = {
 }
 
 
-@dataclass
-class StrokeData:
-    X: pd.DataFrame
-    y: pd.Series
-    target: str
-
-
-def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    out.columns = [str(c).strip().replace(" ", "_") for c in out.columns]
-    return out
-
-
-def find_target_column(df: pd.DataFrame) -> str:
-    for col in TARGET_CANDIDATES:
-        if col in df.columns:
-            return col
-    raise ValueError(f"Không tìm thấy cột nhãn. Các cột hiện có: {list(df.columns)}")
-
-
-def read_source(path: str | Path, nrows: int | None = None) -> pd.DataFrame:
-    """Đọc CSV hoặc CSV.ZIP trực tiếp. ZIP không được giải nén thủ công.
-
-    File ZIP của Dataset 2 chứa một CSV nên pandas có thể stream-decompress trực tiếp.
-    """
+def load_raw_dataset(
+    path,
+    dataset_name,
+    nrows=None,
+):
     path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(path)
 
-    kwargs = {
-        "dtype": STROKE_DTYPES,
-        "low_memory": False,
-        "nrows": nrows,
-    }
-    if path.suffix.lower() == ".zip":
-        kwargs["compression"] = "zip"
-    return pd.read_csv(path, **kwargs)
+    compression = (
+        "zip"
+        if path.suffix.lower() == ".zip"
+        else None
+    )
+
+    dtype_map = (
+        DTYPE_DATASET1
+        if dataset_name == "dataset1"
+        else DTYPE_DATASET2
+    )
+
+    usecols = [
+        "gender",
+        "age",
+        "hypertension",
+        "heart_disease",
+        "ever_married",
+        "work_type",
+        "Residence_type",
+        "avg_glucose_level",
+        "bmi",
+        "smoking_status",
+        "stroke",
+    ]
+
+    df = pd.read_csv(
+        path,
+        compression=compression,
+        usecols=usecols,
+        dtype=dtype_map,
+        nrows=nrows,
+    )
+
+    return df
 
 
-def normalize_binary_like_columns(df: pd.DataFrame, dataset: str) -> pd.DataFrame:
-    """Dataset 2 synthetic có các biến nhị phân bị jitter quanh 0 và 1.
+def normalize_dataset2_binary_columns(df):
+    df = df.copy()
 
-    Ngưỡng 0.5 đưa hypertension, heart_disease và stroke về đúng dạng 0/1.
-    Dataset 1 được giữ nguyên vì các cột này vốn đã là 0/1.
-    """
-    out = df.copy()
-    if dataset == "dataset2":
-        for col in BINARY_LIKE:
-            if col in out.columns:
-                out[col] = (pd.to_numeric(out[col], errors="coerce") >= 0.5).astype("int8")
-    return out
+    for col in BINARY_COLS:
+        df[col] = (
+            pd.to_numeric(
+                df[col],
+                errors="coerce",
+            )
+            >= 0.5
+        ).astype("int8")
+
+    return df
 
 
-def load_stroke_source(path: str | Path, dataset: str, nrows: int | None = None) -> StrokeData:
-    df = read_source(path, nrows=nrows)
-    df = clean_columns(df)
-    df = normalize_binary_like_columns(df, dataset)
+def clean_before_split(
+    df,
+    dataset_name,
+):
+    df = df.copy()
+
     df = df.drop_duplicates().reset_index(drop=True)
 
-    # Theo bài báo: Dataset 2 xóa các bản ghi thiếu; Dataset 1 giữ BMI thiếu
-    # để mean imputation được học ở preprocessing.
-    if dataset == "dataset2":
-        df = df.dropna().reset_index(drop=True)
+    if dataset_name == "dataset2":
+        df = normalize_dataset2_binary_columns(df)
 
-    target = find_target_column(df)
-    y = pd.to_numeric(df[target], errors="raise").astype("int8")
-    if not set(y.unique()).issubset({0, 1}):
-        raise ValueError(f"Nhãn {target} không phải nhị phân 0/1: {sorted(y.unique())}")
+        df = (
+            df
+            .dropna()
+            .reset_index(drop=True)
+        )
 
-    X = df.drop(columns=[target])
-    drop_ids = [c for c in ID_CANDIDATES if c in X.columns]
-    if drop_ids:
-        X = X.drop(columns=drop_ids)
-
-    return StrokeData(X=X, y=y, target=target)
+    return df
 
 
-def cap_outliers_iqr_train_test(
-    X_train: pd.DataFrame,
-    X_test: pd.DataFrame,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Winsorize numeric columns using bounds learned only from training data."""
-    train = X_train.copy()
-    test = X_test.copy()
-    num_cols = train.select_dtypes(include=[np.number]).columns.tolist()
+def split_train_test(
+    df,
+    test_size=0.20,
+    random_state=42,
+):
+    X = df[FEATURE_COLS].copy()
+    y = df[TARGET].astype("int8").copy()
 
-    for col in num_cols:
-        q1 = train[col].quantile(0.25)
-        q3 = train[col].quantile(0.75)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y,
+    )
+
+    return (
+        X_train.reset_index(drop=True),
+        X_test.reset_index(drop=True),
+        y_train.reset_index(drop=True),
+        y_test.reset_index(drop=True),
+    )
+
+
+def fit_bmi_mean(
+    X_train,
+):
+    return float(
+        X_train["bmi"].mean()
+    )
+
+
+def apply_bmi_imputation(
+    X,
+    bmi_mean,
+):
+    X = X.copy()
+
+    X["bmi"] = X["bmi"].fillna(
+        bmi_mean
+    )
+
+    return X
+
+
+def fit_iqr_bounds(
+    X_train,
+):
+    bounds = {}
+
+    for col in NUMERIC_COLS:
+        series = pd.to_numeric(
+            X_train[col],
+            errors="coerce",
+        )
+
+        q1 = float(series.quantile(0.25))
+        q3 = float(series.quantile(0.75))
+
         iqr = q3 - q1
-        if pd.isna(iqr) or iqr == 0:
-            continue
+
         lower = q1 - 1.5 * iqr
         upper = q3 + 1.5 * iqr
-        train[col] = train[col].clip(lower=lower, upper=upper)
-        test[col] = test[col].clip(lower=lower, upper=upper)
 
-    return train, test
+        bounds[col] = {
+            "q1": q1,
+            "q3": q3,
+            "iqr": iqr,
+            "lower": lower,
+            "upper": upper,
+        }
+
+    return bounds
 
 
-def build_preprocessor(X: pd.DataFrame) -> Tuple[ColumnTransformer, list[str], list[str]]:
-    numeric_features = X.select_dtypes(include=[np.number]).columns.tolist()
-    categorical_features = [c for c in X.columns if c not in numeric_features]
+def apply_iqr_clipping(
+    X,
+    bounds,
+):
+    X = X.copy()
 
-    numeric_pipeline = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="mean")),
-            ("scaler", StandardScaler()),
-        ]
-    )
+    for col, values in bounds.items():
+        X[col] = X[col].clip(
+            lower=values["lower"],
+            upper=values["upper"],
+        )
 
-    categorical_pipeline = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-        ]
-    )
+    return X
 
+
+def make_one_hot_encoder():
+    try:
+        return OneHotEncoder(
+            handle_unknown="ignore",
+            sparse_output=False,
+            dtype=np.float32,
+        )
+
+    except TypeError:
+        return OneHotEncoder(
+            handle_unknown="ignore",
+            sparse=False,
+            dtype=np.float32,
+        )
+
+
+def build_preprocessor():
     preprocessor = ColumnTransformer(
         transformers=[
-            ("num", numeric_pipeline, numeric_features),
-            ("cat", categorical_pipeline, categorical_features),
+            (
+                "numeric",
+                StandardScaler(),
+                NUMERIC_COLS,
+            ),
+            (
+                "binary",
+                "passthrough",
+                BINARY_FEATURE_COLS,
+            ),
+            (
+                "categorical",
+                make_one_hot_encoder(),
+                CATEGORICAL_COLS,
+            ),
         ],
         remainder="drop",
         verbose_feature_names_out=False,
     )
-    return preprocessor, numeric_features, categorical_features
+
+    return preprocessor
+
+
+def fit_transform_features(
+    X_train,
+    X_test,
+):
+    preprocessor = build_preprocessor()
+
+    X_train_processed = preprocessor.fit_transform(
+        X_train
+    )
+
+    X_test_processed = preprocessor.transform(
+        X_test
+    )
+
+    X_train_processed = np.asarray(
+        X_train_processed,
+        dtype=np.float32,
+    )
+
+    X_test_processed = np.asarray(
+        X_test_processed,
+        dtype=np.float32,
+    )
+
+    feature_names = np.asarray(
+        preprocessor.get_feature_names_out(),
+        dtype=str,
+    )
+
+    return (
+        X_train_processed,
+        X_test_processed,
+        feature_names,
+        preprocessor,
+    )
+
+
+def prepare_dataset(
+    df,
+    dataset_name,
+    test_size=0.20,
+    random_state=42,
+):
+    df = clean_before_split(
+        df=df,
+        dataset_name=dataset_name,
+    )
+
+    (
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+    ) = split_train_test(
+        df=df,
+        test_size=test_size,
+        random_state=random_state,
+    )
+
+    bmi_mean = None
+
+    if dataset_name == "dataset1":
+        bmi_mean = fit_bmi_mean(
+            X_train
+        )
+
+        X_train = apply_bmi_imputation(
+            X_train,
+            bmi_mean,
+        )
+
+        X_test = apply_bmi_imputation(
+            X_test,
+            bmi_mean,
+        )
+
+    iqr_bounds = fit_iqr_bounds(
+        X_train
+    )
+
+    X_train = apply_iqr_clipping(
+        X_train,
+        iqr_bounds,
+    )
+
+    X_test = apply_iqr_clipping(
+        X_test,
+        iqr_bounds,
+    )
+
+    (
+        X_train_processed,
+        X_test_processed,
+        feature_names,
+        preprocessor,
+    ) = fit_transform_features(
+        X_train,
+        X_test,
+    )
+
+    y_train_array = y_train.to_numpy(
+        dtype=np.int8
+    )
+
+    y_test_array = y_test.to_numpy(
+        dtype=np.int8
+    )
+
+    metadata = {
+        "dataset": dataset_name,
+        "rows_after_basic_cleaning": len(df),
+        "train_rows": len(y_train_array),
+        "test_rows": len(y_test_array),
+        "input_features": len(FEATURE_COLS),
+        "processed_features": len(feature_names),
+        "train_positive": int(y_train_array.sum()),
+        "test_positive": int(y_test_array.sum()),
+        "train_positive_rate": float(y_train_array.mean()),
+        "test_positive_rate": float(y_test_array.mean()),
+        "bmi_train_mean": bmi_mean,
+        "iqr_bounds": iqr_bounds,
+    }
+
+    return {
+        "X_train": X_train_processed,
+        "X_test": X_test_processed,
+        "y_train": y_train_array,
+        "y_test": y_test_array,
+        "feature_names": feature_names,
+        "metadata": metadata,
+        "preprocessor": preprocessor,
+    }
