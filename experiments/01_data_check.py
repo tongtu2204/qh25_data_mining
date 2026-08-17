@@ -25,12 +25,14 @@ BINARY_COLS = [
 
 NUMERIC_COLS = [
     "age",
-    "hypertension",
-    "heart_disease",
     "avg_glucose_level",
     "bmi",
 ]
 
+BINARY_FEATURE_COLS = [
+    "hypertension",
+    "heart_disease",
+]
 
 def load_raw_data(dataset_name, nrows=None):
     path = get_raw_path(dataset_name)
