@@ -1,0 +1,36 @@
+{
+    "dataset": "dataset2",
+    "rows_after_basic_cleaning": 96045,
+    "train_rows": 76836,
+    "test_rows": 19209,
+    "input_features": 10,
+    "processed_features": 21,
+    "train_positive": 3344,
+    "test_positive": 836,
+    "train_positive_rate": 0.043521266073194856,
+    "test_positive_rate": 0.043521266073194856,
+    "bmi_train_mean": null,
+    "iqr_bounds": {
+        "age": {
+            "q1": 24.908540725708008,
+            "q3": 60.4762544631958,
+            "iqr": 35.56771373748779,
+            "lower": -28.44302988052368,
+            "upper": 113.82782506942749
+        },
+        "avg_glucose_level": {
+            "q1": 76.72838592529297,
+            "q3": 114.52192115783691,
+            "iqr": 37.793535232543945,
+            "lower": 20.03808307647705,
+            "upper": 171.21222400665283
+        },
+        "bmi": {
+            "q1": 23.54434823989868,
+            "q3": 33.08271408081055,
+            "iqr": 9.538365840911865,
+            "lower": 9.236799478530884,
+            "upper": 47.390262842178345
+        }
+    }
+}
