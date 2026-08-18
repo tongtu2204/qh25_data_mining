@@ -1,0 +1,9 @@
+{
+    "dataset": "dataset1",
+    "shap_sample_rows": 1022,
+    "pca_components": 11,
+    "pca_explained_variance": 0.9650456309318542,
+    "exact_explanation_space": "PCA components",
+    "projected_original_features": true,
+    "projection_warning": "Projected original-feature SHAP is an approximation obtained by multiplying SHAP values in PCA space by PCA loadings. It is not exact SHAP for the nonlinear composite model."
+}
