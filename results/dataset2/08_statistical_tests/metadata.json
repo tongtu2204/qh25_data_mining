@@ -1,0 +1,32 @@
+{
+    "dataset": "dataset2",
+    "cv_folds": 10,
+    "random_state": 42,
+    "n_jobs": 2,
+    "comparison": {
+        "without_pca": "Sampler -> XGBoost",
+        "with_pca": "Sampler -> PCA -> XGBoost"
+    },
+    "same_cv_folds": true,
+    "same_xgboost_params": true,
+    "xgboost_params": {
+        "colsample_bytree": 0.8,
+        "gamma": 0.0,
+        "learning_rate": 0.1,
+        "max_depth": 5,
+        "min_child_weight": 1,
+        "n_estimators": 400,
+        "subsample": 0.8
+    },
+    "cv_time_without_pca": 177.79607179999584,
+    "cv_time_with_pca": 104.72022859999561,
+    "primary_metric": "accuracy",
+    "primary_result": {
+        "without_pca_mean": 0.9214237514443951,
+        "with_pca_mean": 0.9654058090460789,
+        "mean_difference": 0.04398205760168372,
+        "paired_t_pvalue": 6.43719744267789e-15,
+        "mannwhitney_u_pvalue": 0.00018267179110955002
+    },
+    "note": "Paired t-test is directly appropriate because PCA and non-PCA results use the same cross-validation folds. Mann-Whitney U is included to reproduce the statistical tests reported in the paper, although it assumes independent samples."
+}
