@@ -38,3 +38,5 @@ results/**/*.joblib
 *.toc
 *.vrb
 *.xdv
+
+cpp/build/
