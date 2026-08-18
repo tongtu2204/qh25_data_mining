@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Admin/Desktop/THS/1. Học tập/25K2_Khai phá dữ liệu/qh25_data_mining/cpp
+# Install script for directory: C:/Users/Admin/Desktop/THS/1_Learning/25K2_Data_Mining/qh25_data_mining/cpp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,7 +40,7 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/Admin/Desktop/THS/1. Học tập/25K2_Khai phá dữ liệu/qh25_data_mining/cpp/build/install_local_manifest.txt"
+  file(WRITE "C:/Users/Admin/Desktop/THS/1_Learning/25K2_Data_Mining/qh25_data_mining/cpp/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -56,6 +56,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/Admin/Desktop/THS/1. Học tập/25K2_Khai phá dữ liệu/qh25_data_mining/cpp/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/Admin/Desktop/THS/1_Learning/25K2_Data_Mining/qh25_data_mining/cpp/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

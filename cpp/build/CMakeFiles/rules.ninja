@@ -61,7 +61,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\msys64\ucrt64\bin\cmake.exe --regenerate-during-build -S"C:\Users\Admin\Desktop\THS\1. Học tập\25K2_Khai phá dữ liệu\qh25_data_mining\cpp" -B"C:\Users\Admin\Desktop\THS\1. Học tập\25K2_Khai phá dữ liệu\qh25_data_mining\cpp\build"
+  command = C:\msys64\ucrt64\bin\cmake.exe --regenerate-during-build -SC:\Users\Admin\Desktop\THS\1_Learning\25K2_Data_Mining\qh25_data_mining\cpp -BC:\Users\Admin\Desktop\THS\1_Learning\25K2_Data_Mining\qh25_data_mining\cpp\build
   description = Re-running CMake...
   generator = 1
 
