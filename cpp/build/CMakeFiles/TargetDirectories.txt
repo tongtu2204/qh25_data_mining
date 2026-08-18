@@ -1,0 +1,2 @@
+C:/Users/Admin/Desktop/THS/1. Học tập/25K2_Khai phá dữ liệu/qh25_data_mining/cpp/build/CMakeFiles/edit_cache.dir
+C:/Users/Admin/Desktop/THS/1. Học tập/25K2_Khai phá dữ liệu/qh25_data_mining/cpp/build/CMakeFiles/rebuild_cache.dir
