@@ -1,0 +1,20 @@
+{
+    "accuracy": 0.9500978473581213,
+    "precision": 0.42857142857142855,
+    "recall": 0.06,
+    "f1": 0.10526315789473684,
+    "roc_auc": 0.8307201646090535,
+    "mcc": 0.14616035522493023,
+    "cohen_kappa": 0.09438092921430319,
+    "tn": 968,
+    "fp": 4,
+    "fn": 47,
+    "tp": 3,
+    "dataset": "dataset1",
+    "variant": "without_pca",
+    "train_rows": 4088,
+    "test_rows": 1022,
+    "features": 21,
+    "train_time": 0.29699339999933727,
+    "predict_time": 0.00452190000214614
+}
