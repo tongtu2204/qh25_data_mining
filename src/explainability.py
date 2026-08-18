@@ -1,14 +1,7 @@
 import numpy as np
 import pandas as pd
 import shap
-
-
-def build_tree_explainer(
-    model,
-):
-    return shap.TreeExplainer(
-        model
-    )
+import xgboost as xgb
 
 
 def compute_shap_values(
@@ -16,16 +9,41 @@ def compute_shap_values(
     X,
     feature_names,
 ):
-    explainer = build_tree_explainer(
-        model
+    """
+    Compute exact Tree SHAP values using XGBoost's
+    native pred_contribs implementation.
+
+    This avoids compatibility issues between
+    shap.TreeExplainer and newer XGBoost versions.
+    """
+
+    X = np.asarray(
+        X,
+        dtype=np.float32,
     )
 
-    explanation = explainer(
-        X
+    booster = model.get_booster()
+
+    dmatrix = xgb.DMatrix(
+        X,
+        feature_names=list(feature_names),
     )
 
-    explanation.feature_names = list(
-        feature_names
+    contributions = booster.predict(
+        dmatrix,
+        pred_contribs=True,
+    )
+
+    # Last column is the bias / expected value.
+    shap_values = contributions[:, :-1]
+
+    base_values = contributions[:, -1]
+
+    explanation = shap.Explanation(
+        values=shap_values,
+        base_values=base_values,
+        data=X,
+        feature_names=list(feature_names),
     )
 
     return explanation
@@ -63,21 +81,22 @@ def approximate_original_shap(
     original_feature_names,
 ):
     """
-    Approximate projection of SHAP values from PCA space
-    back to original feature space.
+    Approximate projection of SHAP values from PCA
+    space back to original feature space.
 
-    SHAP_PC shape:
-        n_samples x n_components
+    Parameters
+    ----------
+    shap_pc_values:
+        shape = (n_samples, n_components)
 
-    PCA components shape:
-        n_components x n_original_features
+    pca_components:
+        shape = (n_components, n_original_features)
 
-    Approximation:
-        contribution_original
-        = SHAP_PC @ PCA_components
-
-    This is NOT exact SHAP for the nonlinear
-    XGBoost(PCA(X)) composite model.
+    Notes
+    -----
+    This projection is useful for interpretation,
+    but it is NOT exact SHAP for the nonlinear
+    composite model XGBoost(PCA(X)).
     """
 
     projected = (
