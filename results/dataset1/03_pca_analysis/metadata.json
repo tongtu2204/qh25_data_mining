@@ -1,0 +1,9 @@
+{
+    "dataset": "dataset1",
+    "variance_threshold": 0.95,
+    "input_features": 21,
+    "pca_components": 11,
+    "explained_variance": 0.9689722657203674,
+    "train_rows": 4088,
+    "test_rows": 1022
+}
