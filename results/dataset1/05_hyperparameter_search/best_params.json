@@ -1,0 +1,47 @@
+{
+    "dataset": "dataset1",
+    "original_train": {
+        "rows": 4088,
+        "positive": 199,
+        "negative": 3889,
+        "positive_rate": 0.04867906066536203
+    },
+    "manual_balancing": {
+        "method": "SMOTE",
+        "rows_after_balance": 7778,
+        "positive_after": 3889,
+        "negative_after": 3889,
+        "balance_time": 1.6260941000073217
+    },
+    "manual_pca": {
+        "input_features": 21,
+        "pca_components": 11,
+        "explained_variance": 0.9650456309318542,
+        "pca_time": 0.004641799998353235
+    },
+    "tuning": {
+        "leakage_safe": true,
+        "pipeline": "Sampler -> PCA -> XGBoost",
+        "max_tuning_rows": null,
+        "actual_tuning_rows": 4088,
+        "best_cv_auc": 0.8028179077862582,
+        "tuning_time": 20.224069500007317,
+        "best_params": {
+            "colsample_bytree": 0.8,
+            "gamma": 0.2,
+            "learning_rate": 0.03,
+            "max_depth": 3,
+            "min_child_weight": 5,
+            "n_estimators": 200,
+            "subsample": 0.8
+        }
+    },
+    "tuned_pipeline": {
+        "sampler": "SMOTE",
+        "pca_components": 11,
+        "pca_explained_variance": 0.9650456309318542,
+        "model": "XGBClassifier",
+        "refit_time": 0.3897214000025997,
+        "predict_time": 0.00606349999725353
+    }
+}

@@ -8,9 +8,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 
-from src.balancing import (
-    balance_training_data,
-)
+from src.balancing import balance_training_data
 from src.pca import load_npz_dataset
 from src.tuning import run_grid_search
 from src.xgboost_model import (
@@ -26,6 +24,47 @@ def print_title(title):
     print("=" * 90)
     print(title)
     print("=" * 90)
+
+
+def print_metrics(metrics, cm):
+    print(
+        f"Accuracy      : "
+        f"{metrics['accuracy']:.6f}"
+    )
+
+    print(
+        f"Precision     : "
+        f"{metrics['precision']:.6f}"
+    )
+
+    print(
+        f"Recall        : "
+        f"{metrics['recall']:.6f}"
+    )
+
+    print(
+        f"F1            : "
+        f"{metrics['f1']:.6f}"
+    )
+
+    print(
+        f"ROC-AUC       : "
+        f"{metrics['roc_auc']:.6f}"
+    )
+
+    print(
+        f"MCC           : "
+        f"{metrics['mcc']:.6f}"
+    )
+
+    print(
+        f"Cohen Kappa   : "
+        f"{metrics['cohen_kappa']:.6f}"
+    )
+
+    print()
+    print("Confusion matrix:")
+    print(cm)
 
 
 def evaluate_model(
@@ -110,6 +149,10 @@ def run_experiment(
         exist_ok=True,
     )
 
+    # ============================================================
+    # LOAD ORIGINAL TRAIN / TEST
+    # ============================================================
+
     data = load_npz_dataset(
         dataset_name
     )
@@ -124,11 +167,18 @@ def run_experiment(
     )
 
     print(
-        f"X_train             : {X_train.shape}"
+        f"X_train             : "
+        f"{X_train.shape}"
     )
 
     print(
-        f"Positive            : {y_train.sum():,}"
+        f"X_test              : "
+        f"{X_test.shape}"
+    )
+
+    print(
+        f"Positive            : "
+        f"{y_train.sum():,}"
     )
 
     print(
@@ -140,6 +190,12 @@ def run_experiment(
         f"Positive rate       : "
         f"{y_train.mean():.6f}"
     )
+
+    summary_rows = []
+
+    # ============================================================
+    # CLASS BALANCING
+    # ============================================================
 
     print_title(
         "CLASS BALANCING"
@@ -197,8 +253,6 @@ def run_experiment(
         f"Balance time        : "
         f"{balance_time:.4f} s"
     )
-
-    summary_rows = []
 
     # ============================================================
     # VARIANT 1 - BALANCE ONLY
@@ -363,26 +417,34 @@ def run_experiment(
     )
 
     # ============================================================
-    # GRID SEARCH
+    # GRID SEARCH - LEAKAGE SAFE
+    #
+    # IMPORTANT:
+    # Grid Search receives ORIGINAL training data.
+    #
+    # Each CV fold performs:
+    # sampler -> PCA -> XGBoost
+    #
+    # This prevents SMOTE / undersampling / PCA leakage.
     # ============================================================
 
     print_title(
-        "GRID SEARCH - BALANCE + PCA"
+        "GRID SEARCH - LEAKAGE SAFE PIPELINE"
     )
 
     (
         X_tune,
         y_tune,
     ) = get_tuning_subset(
-        X=X_balanced_pca,
-        y=y_balanced,
+        X=X_train,
+        y=y_train,
         max_rows=max_tuning_rows,
         random_state=42,
     )
 
     print(
-        f"Full balanced rows  : "
-        f"{len(y_balanced):,}"
+        f"Original train rows : "
+        f"{len(y_train):,}"
     )
 
     print(
@@ -390,8 +452,13 @@ def run_experiment(
         f"{len(y_tune):,}"
     )
 
+    print(
+        "CV pipeline         : "
+        "Sampler -> PCA -> XGBoost"
+    )
+
     (
-        best_model,
+        best_pipeline,
         best_params,
         best_cv_auc,
         tuning_time,
@@ -399,6 +466,7 @@ def run_experiment(
     ) = run_grid_search(
         X_train=X_tune,
         y_train=y_tune,
+        dataset_name=dataset_name,
         cv_splits=3,
         random_state=42,
         n_jobs=-1,
@@ -420,21 +488,31 @@ def run_experiment(
 
     for key, value in best_params.items():
         print(
-            f"  {key:20s}: {value}"
+            f"  {key:20s}: "
+            f"{value}"
         )
 
-    # GridSearch best estimator mới fit trên tuning subset.
-    # Fit lại trên FULL balanced PCA train.
+    # ============================================================
+    # REFIT BEST PIPELINE ON FULL ORIGINAL TRAIN
+    #
+    # best_pipeline contains:
+    # sampler -> PCA -> XGBoost
+    #
+    # fit() on original training data means:
+    # 1. sampler balances the full training set
+    # 2. PCA fits only on balanced training data
+    # 3. XGBoost fits on PCA output
+    # ============================================================
 
     print_title(
-        "REFIT BEST MODEL ON FULL BALANCED TRAIN"
+        "REFIT BEST PIPELINE ON FULL ORIGINAL TRAIN"
     )
 
     start = time.perf_counter()
 
-    best_model.fit(
-        X_balanced_pca,
-        y_balanced,
+    best_pipeline.fit(
+        X_train,
+        y_train,
     )
 
     refit_time = (
@@ -442,13 +520,23 @@ def run_experiment(
         - start
     )
 
-    (
-        y_pred,
-        y_prob,
-        predict_time,
-    ) = predict_model(
-        model=best_model,
-        X_test=X_test_pca,
+    # ============================================================
+    # TEST PREDICTION
+    # ============================================================
+
+    start = time.perf_counter()
+
+    y_pred = best_pipeline.predict(
+        X_test
+    )
+
+    y_prob = best_pipeline.predict_proba(
+        X_test
+    )[:, 1]
+
+    predict_time = (
+        time.perf_counter()
+        - start
     )
 
     (
@@ -461,31 +549,80 @@ def run_experiment(
         y_prob=y_prob,
     )
 
+    tuned_sampler = (
+        best_pipeline
+        .named_steps["sampler"]
+    )
+
+    tuned_pca = (
+        best_pipeline
+        .named_steps["pca"]
+    )
+
+    tuned_model = (
+        best_pipeline
+        .named_steps["model"]
+    )
+
     metrics_tuned.update({
-        "variant": "balance_pca_tuned",
-        "features": int(
-            X_balanced_pca.shape[1]
-        ),
-        "train_rows": int(
-            len(y_balanced)
-        ),
-        "train_time": float(
-            refit_time
-        ),
-        "predict_time": float(
-            predict_time
-        ),
-        "best_cv_auc": float(
-            best_cv_auc
-        ),
-        "tuning_time": float(
-            tuning_time
-        ),
+        "variant":
+            "balance_pca_tuned",
+        "features":
+            int(
+                tuned_pca.n_components_
+            ),
+        "train_rows":
+            int(
+                len(y_train)
+            ),
+        "train_time":
+            float(
+                refit_time
+            ),
+        "predict_time":
+            float(
+                predict_time
+            ),
+        "best_cv_auc":
+            float(
+                best_cv_auc
+            ),
+        "tuning_time":
+            float(
+                tuning_time
+            ),
     })
 
     summary_rows.append(
         metrics_tuned
     )
+
+    print(
+        f"Sampler             : "
+        f"{tuned_sampler.__class__.__name__}"
+    )
+
+    print(
+        f"PCA components      : "
+        f"{tuned_pca.n_components_}"
+    )
+
+    print(
+        f"Explained variance  : "
+        f"{tuned_pca.explained_variance_ratio_.sum():.6f}"
+    )
+
+    print(
+        f"Refit time          : "
+        f"{refit_time:.4f} s"
+    )
+
+    print(
+        f"Predict time        : "
+        f"{predict_time:.4f} s"
+    )
+
+    print()
 
     print_metrics(
         metrics_tuned,
@@ -493,7 +630,17 @@ def run_experiment(
     )
 
     # ============================================================
-    # SAVE
+    # SAVE GRID SEARCH RESULTS
+    # ============================================================
+
+    grid_results.to_csv(
+        output_dir
+        / "grid_search_results.csv",
+        index=False,
+    )
+
+    # ============================================================
+    # SAVE SUMMARY
     # ============================================================
 
     summary = pd.DataFrame(
@@ -505,42 +652,155 @@ def run_experiment(
         index=False,
     )
 
-    grid_results.to_csv(
-        output_dir / "grid_search_results.csv",
-        index=False,
-    )
+    # ============================================================
+    # SAVE METADATA
+    # ============================================================
+
+    metadata = {
+        "dataset": dataset_name,
+
+        "original_train": {
+            "rows": int(
+                len(y_train)
+            ),
+            "positive": int(
+                y_train.sum()
+            ),
+            "negative": int(
+                len(y_train)
+                - y_train.sum()
+            ),
+            "positive_rate": float(
+                y_train.mean()
+            ),
+        },
+
+        "manual_balancing": {
+            "method":
+                sampler.__class__.__name__,
+
+            "rows_after_balance":
+                int(
+                    len(y_balanced)
+                ),
+
+            "positive_after":
+                int(
+                    y_balanced.sum()
+                ),
+
+            "negative_after":
+                int(
+                    len(y_balanced)
+                    - y_balanced.sum()
+                ),
+
+            "balance_time":
+                float(
+                    balance_time
+                ),
+        },
+
+        "manual_pca": {
+            "input_features":
+                int(
+                    X_balanced.shape[1]
+                ),
+
+            "pca_components":
+                int(
+                    pca.n_components_
+                ),
+
+            "explained_variance":
+                float(
+                    pca
+                    .explained_variance_ratio_
+                    .sum()
+                ),
+
+            "pca_time":
+                float(
+                    pca_time
+                ),
+        },
+
+        "tuning": {
+            "leakage_safe":
+                True,
+
+            "pipeline":
+                "Sampler -> PCA -> XGBoost",
+
+            "max_tuning_rows":
+                max_tuning_rows,
+
+            "actual_tuning_rows":
+                int(
+                    len(y_tune)
+                ),
+
+            "best_cv_auc":
+                float(
+                    best_cv_auc
+                ),
+
+            "tuning_time":
+                float(
+                    tuning_time
+                ),
+
+            "best_params":
+                best_params,
+        },
+
+        "tuned_pipeline": {
+            "sampler":
+                tuned_sampler.__class__.__name__,
+
+            "pca_components":
+                int(
+                    tuned_pca.n_components_
+                ),
+
+            "pca_explained_variance":
+                float(
+                    tuned_pca
+                    .explained_variance_ratio_
+                    .sum()
+                ),
+
+            "model":
+                tuned_model.__class__.__name__,
+
+            "refit_time":
+                float(
+                    refit_time
+                ),
+
+            "predict_time":
+                float(
+                    predict_time
+                ),
+        },
+    }
 
     with open(
-        output_dir / "best_params.json",
+        output_dir
+        / "best_params.json",
         "w",
         encoding="utf-8",
     ) as f:
         json.dump(
-            {
-                "dataset": dataset_name,
-                "best_cv_auc": best_cv_auc,
-                "best_params": best_params,
-                "balance_method":
-                    sampler.__class__.__name__,
-                "rows_before_balance":
-                    int(len(y_train)),
-                "rows_after_balance":
-                    int(len(y_balanced)),
-                "pca_components":
-                    int(pca.n_components_),
-                "pca_explained_variance":
-                    float(
-                        pca
-                        .explained_variance_ratio_
-                        .sum()
-                    ),
-                "max_tuning_rows":
-                    max_tuning_rows,
-            },
+            metadata,
             f,
             ensure_ascii=False,
             indent=4,
         )
+
+    # ============================================================
+    # FINAL SUMMARY
+    # ============================================================
 
     print_title(
         f"{dataset_name.upper()} - SUMMARY"
@@ -580,55 +840,11 @@ def run_experiment(
     )
 
 
-def print_metrics(
-    metrics,
-    cm,
-):
-    print(
-        f"Accuracy      : "
-        f"{metrics['accuracy']:.6f}"
-    )
-
-    print(
-        f"Precision     : "
-        f"{metrics['precision']:.6f}"
-    )
-
-    print(
-        f"Recall        : "
-        f"{metrics['recall']:.6f}"
-    )
-
-    print(
-        f"F1            : "
-        f"{metrics['f1']:.6f}"
-    )
-
-    print(
-        f"ROC-AUC       : "
-        f"{metrics['roc_auc']:.6f}"
-    )
-
-    print(
-        f"MCC           : "
-        f"{metrics['mcc']:.6f}"
-    )
-
-    print(
-        f"Cohen Kappa   : "
-        f"{metrics['cohen_kappa']:.6f}"
-    )
-
-    print()
-    print("Confusion matrix:")
-    print(cm)
-
-
 def main():
     parser = argparse.ArgumentParser(
         description=(
             "05 - Class balancing, PCA "
-            "and XGBoost Grid Search"
+            "and leakage-safe XGBoost Grid Search"
         )
     )
 
@@ -646,9 +862,12 @@ def main():
         type=int,
         default=None,
         help=(
-            "Giới hạn số dòng dùng Grid Search. "
-            "Model tốt nhất vẫn refit trên full "
-            "balanced training data."
+            "Giới hạn số ORIGINAL training rows "
+            "được dùng cho Grid Search. "
+            "Sampler và PCA vẫn chạy bên trong "
+            "mỗi CV fold. "
+            "Best pipeline sau đó được refit "
+            "trên toàn bộ original training set."
         ),
     )
 
