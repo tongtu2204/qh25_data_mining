@@ -1,0 +1,42 @@
+{
+    "dataset": "dataset2",
+    "cv_folds": 10,
+    "best_params": {
+        "colsample_bytree": 0.8,
+        "gamma": 0.0,
+        "learning_rate": 0.1,
+        "max_depth": 5,
+        "min_child_weight": 1,
+        "n_estimators": 400,
+        "subsample": 0.8
+    },
+    "sampler": "RandomUnderSampler",
+    "pca_components": 11,
+    "pca_explained_variance": 0.9586086048989102,
+    "cv": {
+        "accuracy_mean": 0.9653751356350208,
+        "accuracy_std": 0.0010031138661451985,
+        "precision_mean": 0.5519347363086182,
+        "precision_std": 0.0072627659847842195,
+        "recall_mean": 0.9937065931543337,
+        "recall_std": 0.0004905122149301513,
+        "f1_mean": 0.7096626047124863,
+        "f1_std": 0.006019945518626266,
+        "roc_auc_mean": 0.9974660388024775,
+        "roc_auc_std": 0.00015283691166840765,
+        "total_cv_time": 93.87125860000378
+    },
+    "test": {
+        "accuracy": 0.9663630302773325,
+        "precision": 0.5590046574787674,
+        "recall": 0.9944270215290727,
+        "f1": 0.7156920308365677,
+        "roc_auc": 0.9976401393726466,
+        "mcc": 0.7322173054085923,
+        "cohen_kappa": 0.6993014961044401,
+        "tn": 1024239,
+        "fp": 37022,
+        "fn": 263,
+        "tp": 46929
+    }
+}

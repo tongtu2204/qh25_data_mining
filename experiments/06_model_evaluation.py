@@ -369,7 +369,7 @@ def run_evaluation(
         y=y_train,
         n_splits=cv_splits,
         random_state=42,
-        n_jobs=-1,
+        n_jobs=2,
     )
 
     print(
