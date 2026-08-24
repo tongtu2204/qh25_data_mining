@@ -1,0 +1,21 @@
+dataset,rank,feature,mean_abs_projected_shap
+dataset1,1,avg_glucose_level,1.0902804
+dataset1,2,age,0.49455175
+dataset1,3,bmi,0.48831224
+dataset1,4,ever_married_Yes,0.253253
+dataset1,5,ever_married_No,0.25325298
+dataset1,6,smoking_status_smokes,0.1839927
+dataset1,7,smoking_status_Unknown,0.18091457
+dataset1,8,smoking_status_never smoked,0.15376331
+dataset1,9,work_type_Govt_job,0.15227225
+dataset1,10,work_type_Self-employed,0.14533928
+dataset2,1,avg_glucose_level,1.8001549
+dataset2,2,age,0.9517925
+dataset2,3,bmi,0.842386
+dataset2,4,smoking_status_Unknown,0.61013055
+dataset2,5,gender_Female,0.53377163
+dataset2,6,gender_Male,0.53349966
+dataset2,7,ever_married_Yes,0.5130853
+dataset2,8,ever_married_No,0.51308525
+dataset2,9,smoking_status_smokes,0.47916037
+dataset2,10,work_type_Self-employed,0.42281553

@@ -7,14 +7,19 @@ __pycache__/
 # Local machine config: mỗi người có path dữ liệu riêng
 config/config.yaml
 
-# Raw/processed data không push lên Git
+# Raw data không push lên Git
 data/raw/*
 !data/raw/.gitkeep
+
+# Processed/cache data không push lên Git - do max là 50MB
 data/processed/*
 !data/processed/.gitkeep
-*.csv
+
+# File dữ liệu lớn không push
 *.zip
 *.npz
+
+# CSV vẫn được phép push
 
 # Results
 # Kết quả nhỏ được phép push

@@ -1,0 +1,2 @@
+dataset,path,rows,columns,duplicates,total_missing,target_nunique_raw,target_min_raw,target_max_raw,target_mean_raw
+dataset2,C:\Users\Admin\Desktop\THS\1. Học tập\25K2_Khai phá dữ liệu\healthcare_data_2GB.csv.zip,100000,12,0,3955,50147,0.0,1.0,0.057540127841341215

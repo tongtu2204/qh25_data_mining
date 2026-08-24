@@ -1,0 +1,17 @@
+column,value,count,rate
+gender,Female,2994,0.5859099804305283
+gender,Male,2115,0.41389432485322897
+gender,Other,1,0.00019569471624266145
+ever_married,Yes,3353,0.6561643835616439
+ever_married,No,1757,0.34383561643835614
+work_type,Private,2925,0.5724070450097848
+work_type,Self-employed,819,0.16027397260273973
+work_type,children,687,0.1344422700587084
+work_type,Govt_job,657,0.12857142857142856
+work_type,Never_worked,22,0.004305283757338552
+Residence_type,Urban,2596,0.5080234833659492
+Residence_type,Rural,2514,0.4919765166340509
+smoking_status,never smoked,1892,0.37025440313111546
+smoking_status,Unknown,1544,0.3021526418786693
+smoking_status,formerly smoked,885,0.17318982387475537
+smoking_status,smokes,789,0.1544031311154599

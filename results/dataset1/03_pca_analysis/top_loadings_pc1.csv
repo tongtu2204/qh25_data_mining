@@ -1,0 +1,11 @@
+feature,PC1,abs_loading
+age,0.6321288,0.6321288
+bmi,0.5320745,0.5320745
+avg_glucose_level,0.30965877,0.30965877
+ever_married_No,-0.25941586,0.25941586
+ever_married_Yes,0.25941584,0.25941584
+work_type_children,-0.18115935,0.18115935
+smoking_status_Unknown,-0.16142933,0.16142933
+work_type_Private,0.08318097,0.08318097
+work_type_Self-employed,0.0695504,0.0695504
+smoking_status_never smoked,0.064356156,0.064356156

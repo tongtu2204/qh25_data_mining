@@ -1,0 +1,2 @@
+dataset,path,rows,columns,duplicates,total_missing,target_nunique_raw,target_min_raw,target_max_raw,target_mean_raw
+dataset1,C:\Users\Admin\Desktop\THS\1. Học tập\25K2_Khai phá dữ liệu\healthcare-dataset-stroke-data.csv,5110,12,0,201,2,0.0,1.0,0.0487279843444227

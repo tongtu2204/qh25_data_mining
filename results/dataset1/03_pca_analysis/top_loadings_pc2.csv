@@ -1,0 +1,11 @@
+feature,PC2,abs_loading
+avg_glucose_level,0.9412806,0.9412806
+bmi,-0.19161142,0.19161142
+age,-0.160809,0.160809
+ever_married_No,0.09370081,0.09370081
+ever_married_Yes,-0.09370078,0.09370078
+work_type_children,0.08894989,0.08894989
+gender_Female,-0.08337558,0.08337558
+gender_Male,0.08295433,0.08295433
+smoking_status_Unknown,0.07069253,0.07069253
+work_type_Private,-0.057403613,0.057403613

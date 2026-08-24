@@ -1,0 +1,22 @@
+feature,mean_abs_projected_shap
+avg_glucose_level,1.0902804
+age,0.49455175
+bmi,0.48831224
+ever_married_Yes,0.253253
+ever_married_No,0.25325298
+smoking_status_smokes,0.1839927
+smoking_status_Unknown,0.18091457
+smoking_status_never smoked,0.15376331
+work_type_Govt_job,0.15227225
+work_type_Self-employed,0.14533928
+gender_Female,0.13659625
+gender_Male,0.13647321
+work_type_Private,0.13236767
+smoking_status_formerly smoked,0.13171524
+hypertension,0.115120426
+heart_disease,0.10569687
+work_type_children,0.103182234
+Residence_type_Urban,0.08379621
+Residence_type_Rural,0.0837962
+work_type_Never_worked,0.001621409
+gender_Other,0.0002211382
