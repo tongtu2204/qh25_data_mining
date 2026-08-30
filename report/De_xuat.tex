@@ -1,0 +1,17 @@
+\chapter{ĐỀ XUẤT HƯỚNG NGHIÊN CỨU TIẾP THEO}
+%\addcontentsline{toc}{chapter}{ĐỀ XUẤT HƯỚNG NGHIÊN CỨU TIẾP THEO}
+
+Dựa trên các phát hiện ở Chương 3 và Chương 4, nhóm đề xuất một số hướng mở rộng cụ thể cho các giai đoạn tiếp theo của nghiên cứu: dữ liệu và đánh giá, mô hình hóa
+
+\noindent\textbf{Về dữ liệu và phương pháp đánh giá}
+\begin{itemize}
+	\item Bổ sung các chỉ số phù hợp hơn với dữ liệu mất cân bằng mạnh bên cạnh Accuracy, đặc biệt là PR-AUC (Precision--Recall AUC) và average precision, vốn nhạy với hiệu năng trên lớp thiểu số hơn ROC-AUC khi tỷ lệ dương tính rất thấp như ở Dataset 1 ($\approx$4.9\%).
+	\item Khảo sát việc điều chỉnh ngưỡng phân loại (threshold tuning) thay vì dùng mặc định 0.5 -- ví dụ chọn ngưỡng theo điểm cân bằng Precision--Recall mong muốn, hoặc theo chi phí lâm sàng tương đối giữa bỏ sót ca bệnh (False Negative) và cảnh báo giả (False Positive).
+\end{itemize}
+
+\noindent\textbf{Về mô hình hóa}
+\begin{itemize}
+	\item Với Dataset 1, do PCA hiện làm giảm Accuracy trung bình một cách có ý nghĩa thống kê, nên thử nghiệm thêm các phương án: không dùng PCA, dùng PCA với số thành phần lớn hơn (ví dụ giữ 99\% phương sai thay vì 95\%), hoặc dùng các phương pháp giảm chiều khác (ví dụ lựa chọn đặc trưng dựa trên độ quan trọng của XGBoost) để so sánh.
+	\item Thử nghiệm scale\_pos\_weight của XGBoost hoặc các kỹ thuật cost-sensitive learning khác như một phương án thay thế/bổ sung cho SMOTE và undersampling, vì các phương pháp resampling có thể làm thay đổi phân phối dữ liệu theo cách không phản ánh đúng tổng thể, trong khi cost-sensitive learning giữ nguyên dữ liệu gốc.
+	\item Thử nghiệm SMOTE-Tomek hoặc ADASYN cho Dataset 1 để so sánh với SMOTE thuần, và thử stratified undersampling kết hợp bagging nhiều mô hình con cho Dataset 2 thay vì một lần undersampling duy nhất, nhằm tận dụng tốt hơn lượng lớn mẫu lớp đa số bị loại bỏ.
+\end{itemize}

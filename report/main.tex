@@ -29,7 +29,8 @@
 \usepackage{siunitx}
 
 % ==================== Khổ trang theo MauLuanAn ====================
-\usepackage[left=3.5cm,right=2cm,top=3.5cm,bottom=3cm]{geometry}
+%\usepackage[left=3.5cm,right=2cm,top=3.5cm,bottom=3cm]{geometry}
+\usepackage[left=3.5cm,right=2cm,top=2.0cm,bottom=2.0cm]{geometry}
 \setlength{\parindent}{1.2cm}
 \setlength{\parskip}{0pt}
 \linespread{1.30}\selectfont
@@ -41,8 +42,8 @@
 % ==================== Định dạng chương/mục theo MauLuanAn ====================
 \titleformat{\chapter}[display]
   {\normalfont\Large\bfseries\centering}
-  {\chaptertitlename\ \thechapter}{5pt}{\Large}
-\titlespacing*{\chapter}{0pt}{10pt}{30pt}
+  {\chaptertitlename\ \thechapter}{0pt}{\Large}
+\titlespacing*{\chapter}{0pt}{0pt}{15pt}
 \titleformat*{\section}{\bfseries\fontsize{13}{16}\selectfont}
 \titleformat*{\subsection}{\bfseries\fontsize{13}{16}\selectfont}
 \titleformat*{\subsubsection}{\bfseries\fontsize{13}{16}\selectfont}
@@ -73,11 +74,12 @@
 % ==================== Thông tin bìa: chỉnh tại đây ====================
 \newcommand{\UniversityName}{ĐẠI HỌC QUỐC GIA HÀ NỘI}
 \newcommand{\SchoolName}{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}
-\newcommand{\StudentName}{HỌ VÀ TÊN SINH VIÊN}
-\newcommand{\CourseName}{KHAI PHÁ DỮ LIỆU}
-\newcommand{\SupervisorName}{GIẢNG VIÊN HƯỚNG DẪN}
-\newcommand{\ReportYear}{2026}
-\newcommand{\ReportTitle}{CẢI THIỆN DỰ ĐOÁN NGUY CƠ ĐỘT QUỴ BẰNG CÁCH TÍCH HỢP XGBOOST, PHÂN TÍCH THÀNH PHẦN CHÍNH TỐI ƯU VÀ TRÍ TUỆ NHÂN TẠO GIẢI THÍCH ĐƯỢC}
+\newcommand{\StudentNameA}{TỐNG VIỆT TÚ - Mã học viên: 25007845}
+\newcommand{\StudentNameB}{NGUYỄN THỊ NHẬT LINH - Mã học viên: 25007871}
+\newcommand{\CourseName}{HỌC MÁY VÀ KHAI PHÁ DỮ LIỆU}
+\newcommand{\SupervisorName}{TRẦN TRỌNG HIẾU}
+\newcommand{\ReportYear}{09/2026}
+\newcommand{\ReportTitle}{CẢI THIỆN DỰ ĐOÁN NGUY CƠ ĐỘT QUỴ BẰNG CÁCH TÍCH HỢP XGBOOST,	PHÂN TÍCH THÀNH PHẦN CHÍNH TỐI ƯU VÀ TRÍ TUỆ NHÂN TẠO GIẢI THÍCH ĐƯỢC}
 
 \newcommand{\paperfig}[3][0.88\linewidth]{%
   \begin{figure}[H]
@@ -86,46 +88,57 @@
     \caption{#3}
   \end{figure}}
 
+\usepackage{xurl}
+
 \begin{document}
 
 % ==================== BÌA NGOÀI ====================
-\begin{titlepage}
-\thispagestyle{empty}
-\thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
-\begin{center}
-{\fontsize{15}{18}\selectfont \UniversityName\\}
-{\fontsize{15}{18}\selectfont\bfseries \SchoolName\\}
-\vspace*{2.7cm}
-{\fontsize{15}{18}\selectfont\bfseries \StudentName\\}
-\vspace*{3.2cm}
-{\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
-\vspace*{2.5cm}
-{\fontsize{15}{18}\selectfont BÁO CÁO HỌC PHẦN \CourseName\par}
-\vfill
-{\fontsize{15}{18}\selectfont\bfseries HÀ NỘI -- \ReportYear}
-\end{center}
-\end{titlepage}
+%\begin{titlepage}
+%\thispagestyle{empty}
+%\thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
+%\begin{center}
+%{\fontsize{15}{18}\selectfont \UniversityName\\}
+%{\fontsize{15}{18}\selectfont\bfseries \SchoolName\\}
+%\vspace*{2.7cm}
+%{\fontsize{15}{18}\selectfont\bfseries \StudentName\\}
+%\vspace*{3.2cm}
+%{\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
+%\vspace*{2.5cm}
+%{\fontsize{15}{18}\selectfont BÁO CÁO HỌC PHẦN \CourseName\par}
+%\vfill
+%{\fontsize{15}{18}\selectfont\bfseries HÀ NỘI -- \ReportYear}
+%\end{center}
+%\end{titlepage}
 
 % ==================== BÌA TRONG ====================
+
 \begin{titlepage}
-\thispagestyle{empty}
-\thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
-\begin{center}
-{\fontsize{15}{18}\selectfont \UniversityName\\}
-{\fontsize{15}{18}\selectfont\bfseries \SchoolName\\}
-\vspace*{2cm}
-{\fontsize{15}{18}\selectfont\bfseries \StudentName\\}
-\vspace*{2.5cm}
-{\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
-\vspace*{2.2cm}
-\end{center}
-\noindent\hspace*{2.7cm}\textbf{Học phần:} \CourseName\\[1.1cm]
-\noindent\hspace*{2.7cm}\textbf{Giảng viên hướng dẫn:} \SupervisorName
-\vfill
-\begin{center}
-{\fontsize{15}{18}\selectfont\bfseries HÀ NỘI -- \ReportYear}
-\end{center}
+	\thispagestyle{empty}
+	\thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
+	\begin{center}
+		\vspace*{0.03cm}
+		{\fontsize{15}{18}\selectfont \UniversityName\\}
+		{\fontsize{15}{18}\selectfont\bfseries \SchoolName\\}
+		\vspace*{4cm}
+		{\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
+		\vspace*{4cm}
+	\end{center}
+	
+	\noindent\hspace*{2.7cm}\parbox{12cm}{
+		\fontsize{13}{18}\selectfont
+		\textbf{Học phần:} \CourseName\\[0.4cm]
+		\textbf{Giảng viên hướng dẫn:} \SupervisorName\\[0.4cm]
+		\textbf{Học viên thực hiện:}\\
+		\hspace*{0.5cm} 1. \StudentNameA\\
+		\hspace*{0.5cm} 2. \StudentNameB
+	}
+	
+	\vfill
+	\begin{center}
+		{\fontsize{15}{18}\selectfont\bfseries HÀ NỘI -- \ReportYear}
+	\end{center}
 \end{titlepage}
+
 
 % ==================== PHẦN ĐẦU ====================
 \frontmatter
@@ -164,10 +177,12 @@
 \clearpage
 \input{Chuong4_Thaoluan.tex}
 \clearpage
+\input{De_xuat.tex}
+\clearpage
 \input{Ketluan.tex}
 \clearpage
-\input{ThongtinBaibao.tex}
-\clearpage
+%\input{ThongtinBaibao.tex}
+%\clearpage
 
 % ==================== TÀI LIỆU THAM KHẢO ====================
 \chapter*{TÀI LIỆU THAM KHẢO}

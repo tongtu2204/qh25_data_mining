@@ -1,186 +1,524 @@
 \chapter{KẾT QUẢ}
-Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu: Dataset 1 [31] và Dataset 2 [32]. Dataset 1 gồm 5.110 bản ghi duy nhất với các đặc trưng: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân (đã kết hôn/chưa kết hôn), loại công việc, nơi cư trú, mức glucose máu, chỉ số khối cơ thể (BMI), tình trạng hút thuốc và thông tin đột quỵ. Trong tổng số bản ghi, 249 trường hợp dương tính với đột quỵ, cho thấy dữ liệu mất cân bằng đáng kể. Để phân tích phân bố quan sát ở từng biến phân loại, các biểu đồ cột được xây dựng; ví dụ với biến ``gender'', số quan sát của từng nhóm (nam, nữ, khác) được hiển thị. Dataset 2 gồm 5.769.190 bản ghi và có các thuộc tính tương tự: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân, loại công việc, nơi cư trú, glucose máu, BMI, tình trạng hút thuốc và chẩn đoán. Cả hai tập được loại bản ghi trùng và kiểm tra giá trị thiếu; missing được điền ở tập thứ nhất và loại bỏ ở tập thứ hai. Ngoại lệ của các thuộc tính số được kiểm tra cùng với cân bằng lớp. Ở Dataset 1, nơi số ca dương tính (lớp thiểu số) nhỏ, SMOTE được áp dụng để tạo các mẫu tổng hợp bằng nội suy giữa các mẫu lớp thiểu số hiện có. Cách tiếp cận này giúp giảm mất cân bằng lớp và giảm thiên lệch về lớp đa số. Ở Dataset 2, nơi lớp đa số có nhiều mẫu hơn và toàn bộ tập dữ liệu rất lớn, random undersampling được sử dụng. Thay vì sinh dữ liệu nhân tạo, chúng tôi giảm lớp đa số xuống bằng kích thước lớp thiểu số, vì bổ sung mẫu nhân tạo không phải lúc nào cũng phản ánh dữ liệu thực tế. Điều này giúp mô hình không overfit vào lớp đa số và cải thiện hiệu năng trên lớp thiểu số.
+\section{Tổng quan dữ liệu và tiền xử lý}
 
-Bảng~\ref{tab:jacobi1} trình bày kết quả tìm trị riêng và vector riêng bằng thuật toán quay Jacobi cho Dataset 1. Để tăng hiệu quả tính toán, tính toán song song bằng OpenMP được sử dụng. Ngoài ra, nghiên cứu giảm chiều dữ liệu bằng PCA, giúp giải thích 95\% phương sai của dữ liệu.
+Phương pháp đề xuất được kiểm thử trên hai tập dữ liệu mất cân bằng: Dataset 1 (5.110 bản ghi, 4.87\% ca đột quỵ) và Dataset 2 (5,542,261 bản ghi, 4.26\% ca đột quỵ). Cả hai tập đều được phân chia theo tỷ lệ 80/20 cho huấn luyện/kiểm thử, kết hợp kỹ thuật phân tầng (stratify) theo biến mục tiêu để bảo toàn tỷ lệ phân bố lớp. Quá trình tiền xử lý được thực hiện tương thích với đặc thụ từng tập dữ liệu:
+\begin{itemize}
+	\item \textbf{Xử lý dữ liệu và chuẩn hóa:} Với Dataset 1, giá trị khuyết thiếu (missing) ở biến BMI được gán bằng giá trị trung bình trên tập huấn luyện; trong khi Dataset 2 loại bỏ trực tiếp các bản ghi thiếu. Cả hai tập đều xử lý giá trị ngoại lai (outliers) bằng phương pháp khoảng tứ phân vị (IQR) và áp dụng mã hóa one-hot cho các biến định tính, đưa không gian dữ liệu về đồng nhất 21 đặc trưng đầu vào.
+	\item \textbf{Cân bằng lớp:} Dataset 1 sử dụng kỹ thuật SMOTE để sinh mẫu tổng hợp cho lớp thiểu số quy mô nhỏ. Dataset 2 áp dụng phương pháp lấy mẫu giảm ngẫu nhiên (random undersampling) nhằm tối ưu chi phí tính toán, tránh hiện tượng quá khớp (overfitting) và nâng cao hiệu năng nhận diện ca bệnh.
+\end{itemize}
 
-\begin{table}[H]
-\centering
-\caption{Thời gian thực thi của thuật toán quay Jacobi dựa trên OpenMP cho Dataset 1}\label{tab:jacobi1}
-\begin{tabular}{lr}
-\toprule
-\textbf{Tham số} & \textbf{Giá trị}\\
-\midrule
-Thời gian tính toán không song song, giây & 0.0008801\\
-Thời gian tính toán (OpenMP), giây & 0.0006494\\
-Số thuộc tính ban đầu & 19\\
-Số thuộc tính sau PCA & 13\\
-Tỷ lệ phương sai được giải thích, \% & 95\\
-\bottomrule
-\end{tabular}
-\end{table}
+\noindent Về chất lượng dữ liệu trước khi xử lý: biến duy nhất có giá trị thiếu ở cả hai tập dữ liệu là BMI, với tỷ lệ thiếu gần tương đương nhau — 201/5,110 bản ghi (3.93\%) ở Dataset 1 và 3,955/5,542,261 bản ghi (3.96\%) ở Dataset 2; các biến còn lại không có giá trị thiếu. Về ngoại lệ theo ngưỡng IQR (tính trước khi cắt), avg\_glucose\_level có tỷ lệ ngoại lệ cao nhất ở cả hai tập (Dataset 1: 12.27\%; Dataset 2: 12.03\%), tiếp theo là BMI (Dataset 1: 2.24\%; Dataset 2: 2.28\%); riêng biến tuổi không có bản ghi nào vượt ngưỡng IQR ở cả hai tập dữ liệu.
 
-Thời gian trong Bảng~\ref{tab:jacobi1} không thay đổi đáng kể so với thuật toán tuần tự, được giải thích bởi kích thước nhỏ của ma trận hiệp phương sai (xem Hình~\ref{fig:cov1}); vì vậy, song song hóa đề xuất sẽ hữu ích hơn đối với lượng dữ liệu lớn. Để đánh giá hiệu quả của song song hóa bằng OpenMP, một thí nghiệm được thực hiện với các ma trận có kích thước khác nhau. Để tạo ra khác biệt hiệu năng đủ rõ, các ma trận kích thước 100, 200, 300, 400 và 500 được sinh. Các ma trận được điền giá trị từ 0 đến 1, mô phỏng chuẩn hóa MinMax. Thời gian tính toán được đo và so sánh nhằm đánh giá tác động của song song hóa. Kết quả ở Bảng~\ref{tab:openmp} cho thấy ảnh hưởng của OpenMP trong việc giảm thời gian tính toán. Tính toán hiệu quả đặc biệt quan trọng trong y khoa đối với chẩn đoán, dự báo và ra quyết định kịp thời, ảnh hưởng trực tiếp đến sức khỏe và kết quả của bệnh nhân. Hơn nữa, các phương pháp tính toán tiên tiến cho phép xử lý tập dữ liệu lớn với độ chính xác cao hơn, cải thiện độ chính xác nghiên cứu và tối ưu hóa việc sử dụng tài nguyên.
-
-\paperfig{figures_original/fig-006.jpg}{Ma trận hiệp phương sai (Dataset 1).\label{fig:cov1}}
+\noindent Kết quả sau khi xử lý và làm sạch dữ liệu ở Dataset 1, 2 được thể hiện ở bảng~\ref{tab:tongquan}
 
 \begin{table}[H]
-\centering
-\caption{Ảnh hưởng của OpenMP đến thời gian tính toán (giây) đối với các ma trận có kích thước khác nhau}\label{tab:openmp}
-\begin{tabular}{lrrrrr}
-\toprule
-\textbf{Phương pháp/Kích thước (N)} & 100 & 200 & 300 & 400 & 500\\
-\midrule
-Có OpenMP & 0.5029 & 5.8377 & 40.0427 & 128.957 & 363.385\\
-Không OpenMP & 0.5299 & 7.7465 & 62.9582 & 218.853 & 549.275\\
-\bottomrule
-\end{tabular}
+	\centering
+	\caption{Tổng quan dữ liệu sau làm sạch và chia tập}\label{tab:tongquan}
+	\label{tab:tong_quan_du_lieu}
+	\renewcommand{\arraystretch}{1,2}
+	\begin{tabularx}{\textwidth}{Xrr}
+		\toprule
+		\textbf{Chỉ tiêu} & \textbf{Dataset 1} & \textbf{Dataset 2}\\
+		\midrule
+		Số bản ghi sau làm sạch & 5,110 & 5,542,261\\
+		Số ca dương tính (đột quỵ) & 249 (4.87\%) & 235,961 (4.26\%)\\
+		Số dòng train / test & 4,088 / 1,022 & 4,433,808 / 1,108,453\\
+		% Dòng này được tách đôi đồng bộ ở tất cả các cột
+		Dương tính trong train / test & 199 (4.87\%) & 188,769 (4.26\%)\\ 
+		& / 50 (4.89\%) & / 47,192 (4.26\%)\\ 
+		%\midrule % Thêm một đường kẻ mờ phân cách cho dễ nhìn (tùy chọn)
+		Số đặc trưng đầu vào (sau one-hot) & 21 & 21\\
+		Chiến lược cân bằng lớp & SMOTE & Random undersampling\\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
-Việc sử dụng OpenMP tạo ra lợi ích ngay cả đối với các tập dữ liệu nhỏ vì nó làm giảm thời gian xử lý ở các giai đoạn lặp và tối ưu việc sử dụng bộ xử lý đa lõi. Điều này tạo ra một triển khai tổng quát và có khả năng mở rộng, vẫn hiệu quả cả với dữ liệu hiện tại và các tập dữ liệu lớn hơn trong tương lai.
 
-Hình~\ref{fig:cum1} thể hiện phương sai tích lũy theo thành phần, cho thấy phương sai tích lũy như thế nào khi sử dụng phương pháp thành phần chính. Hình~\ref{fig:scree1} minh họa tỷ lệ phần trăm phương sai được giải thích bởi từng thành phần, cho phép ước lượng đóng góp của chúng vào tổng phương sai dữ liệu.
-
-\paperfig[0.72\linewidth]{figures_original/fig-007.jpg}{Phương sai tích lũy theo thành phần cho Dataset 1.\label{fig:cum1}}
-\paperfig[0.72\linewidth]{figures_original/fig-008.jpg}{Tỷ lệ phương sai được giải thích bởi từng thành phần cho Dataset 1.\label{fig:scree1}}
-
-Sau khi áp dụng PCA, các thành phần chính được thu được cùng với các hệ số (trọng số) của đặc trưng gốc trong các thành phần mới. Các thành phần chính PCA được hình thành dưới dạng tổ hợp tuyến tính của các đặc trưng gốc, và các trọng số phản ánh đóng góp của từng đặc trưng gốc vào thành phần chính tương ứng.
-
-Hình~\ref{fig:pc1} minh họa trọng số của các đặc trưng trong thành phần chính thứ nhất, còn Hình~\ref{fig:pc2} minh họa trọng số trong thành phần chính thứ hai. Phân tích cho thấy thành phần thứ nhất chịu ảnh hưởng đáng kể bởi các đặc trưng như tuổi, \texttt{work\_type\_children} và \texttt{smoking\_status\_Unknown}. Trong khi đó, thành phần thứ hai chịu ảnh hưởng nhiều nhất bởi giới tính và \texttt{work\_type\_self-employed}.
-
-\paperfig[0.82\linewidth]{figures_original/fig-009.jpg}{Trọng số đặc trưng trong thành phần chính thứ nhất cho Dataset 1.\label{fig:pc1}}
-\paperfig[0.82\linewidth]{figures_original/fig-010.jpg}{Trọng số đặc trưng trong thành phần chính thứ hai cho Dataset 1.\label{fig:pc2}}
-
-Các tập dữ liệu y tế có những vấn đề đặc thù như mất cân bằng lớp do tính hiếm của ca bệnh, giá trị thiếu do hồ sơ không đầy đủ và ngoại lệ do sai số đo lường hoặc các tình huống y khoa đặc biệt. Dữ liệu nhiều chiều và nhu cầu diễn giải quyết định của mô hình làm phân tích trở nên khó khăn, đòi hỏi các phương pháp chuyên biệt; nếu không, dự báo có thể không chính xác hoặc sai lệch. Mô hình của chúng tôi xử lý các vấn đề đặc thù này. Chẳng hạn, mất cân bằng lớp được giải quyết bằng SMOTE và giảm ngẫu nhiên lớp đa số để tránh thiên lệch. Dữ liệu thiếu được điền bằng giá trị trung bình và ngoại lệ được xử lý bằng phương pháp IQR để giảm tác động của nhiễu. PCA giảm chiều trong khi duy trì 95\% biến thiên, qua đó tăng tốc tính toán và cải thiện độ chính xác. Ngoài ra, nghiên cứu áp dụng công cụ XAI SHAP, cho phép phân tích chi tiết tác động của phương pháp PCA lên từng trường hợp riêng lẻ trong mẫu.
-
-Hình~\ref{fig:water1} cung cấp phân rã chi tiết ảnh hưởng của từng biến đầu vào lên dự báo cho một mẫu dữ liệu cụ thể. Có thể thấy đóng góp lớn nhất đến từ \texttt{work\_type\_Private} và trạng thái \texttt{ever\_married}. Ngoài ra, giới tính cũng có ảnh hưởng đáng kể đến dự báo. Tuổi và chỉ số khối cơ thể (BMI) có ảnh hưởng nhỏ hơn so với các đặc trưng khác. Dấu của trọng số thể hiện hướng tác động của đặc trưng: trọng số âm biểu thị tác động nghịch lên biến mục tiêu (ví dụ, giảm tuổi có thể gắn với tăng giá trị biến mục tiêu), trong khi trọng số dương biểu thị tác động thuận (ví dụ, BMI tăng đi kèm tăng giá trị mục tiêu). Điều này giúp bác sĩ xác định các yếu tố chủ chốt ảnh hưởng đến nguy cơ của bệnh nhân và hiểu hướng tác động của chúng, góp phần cá nhân hóa điều trị, ra quyết định có cơ sở và lập kế hoạch phòng ngừa. Trực quan hóa cũng giúp giải thích hiệu quả cho bệnh nhân cách đặc trưng của họ ảnh hưởng đến tiên lượng.
-
-\paperfig[0.82\linewidth]{figures_original/fig-011.jpg}{SHAP Waterfall cho mẫu dữ liệu đầu tiên (Dataset 1).\label{fig:water1}}
-
-Hình~\ref{fig:bar1} trình bày các biến đầu vào được sắp xếp theo giá trị SHAP tuyệt đối trung bình trên toàn bộ tập dữ liệu. Biểu đồ cho thấy tác động của từng đặc trưng lên kết quả. Đóng góp lớn nhất đến từ mức glucose máu trung bình (\texttt{avg\_glucose\_level}); việc tăng chỉ số này gắn với tăng giá trị biến mục tiêu do mô hình dự báo. Các đặc trưng quan trọng khác gồm \texttt{work\_type\_Private}, BMI, tuổi và \texttt{work\_type\_Govt\_job}, cũng có tác động đáng kể đến kết quả dự báo.
-
-\paperfig[0.82\linewidth]{figures_original/fig-012.jpg}{SHAP Bar (Dataset 1).\label{fig:bar1}}
-
-Biểu đồ Beeswarm (Hình~\ref{fig:bee1}) là một cách hiển thị giá trị SHAP giàu thông tin, cho thấy không chỉ mức quan trọng tương đối của đặc trưng mà còn mối quan hệ thực tế của chúng với kết quả dự báo. Mỗi điểm trên biểu đồ đại diện cho một quan sát, màu của điểm thể hiện ảnh hưởng của đặc trưng lên dự báo cho quan sát đó: màu đỏ biểu thị làm tăng giá trị dự báo, màu xanh biểu thị làm giảm. Độ đậm màu phản ánh cường độ ảnh hưởng: màu càng đậm thì tác động càng mạnh. Phân bố các điểm dọc trục X cho thấy ảnh hưởng của một đặc trưng thay đổi theo giá trị của nó như thế nào. Chẳng hạn, mức glucose cao nhìn chung gắn với nguy cơ tăng, và nguy cơ cũng tăng theo tuổi. Đây là thông tin hữu ích để xác định các khía cạnh cần kiểm soát như glucose, BMI hoặc tuổi và cá nhân hóa cách điều trị bệnh nhân. Công cụ này cũng hỗ trợ ưu tiên các biện pháp phòng ngừa.
-
-\paperfig[0.82\linewidth]{figures_original/fig-013.jpg}{SHAP Beeswarm (Dataset 1).\label{fig:bee1}}
-
-Bảng~\ref{tab:time} cho thấy thời gian thực thi các giai đoạn khác nhau của thuật toán đề xuất và so sánh với kết quả của các tác giả trong [21].
+\section{Kết quả phân tích thành phần chính PCA và chiều dữ liệu}
+\noindent Bảng~\ref{tab:ket_qua_pca} trình bày kết quả giảm chiều bằng PCA. Để tăng hiệu quả tính toán khi tìm trị riêng và vector riêng của ma trận hiệp phương sai, thuật toán quay Jacobi được song song hóa bằng OpenMP.
 
 \begin{table}[H]
-\centering
-\caption{Thời gian thực thi các giai đoạn khác nhau của thuật toán đề xuất}\label{tab:time}
-\begin{tabular}{lr}
-\toprule
-\textbf{Giai đoạn thuật toán} & \textbf{Thời gian thực thi (s)}\\
-\midrule
-Tìm trị riêng và vector riêng & $6.25\times 10^{-5}$\\
-Tính ma trận hiệp phương sai & 0.00260\\
-Huấn luyện mô hình & 1.34685\\
-Tổng thời gian thực thi & 1.50010\\
-Tổng thời gian của thuật toán trong [21] & 4.52611\\
-\bottomrule
-\end{tabular}
+	\centering
+	\caption{Kết quả PCA (ngưỡng phương sai giải thích 95\%)}
+	\label{tab:ket_qua_pca}
+	\begin{tabular}{lrr} % Đã thêm một chữ 'r' để đủ 3 cột (l r r)
+		\toprule
+		\textbf{Chỉ tiêu} & \textbf{Dataset 1} & \textbf{Dataset 2}\\
+		\midrule
+		Số đặc trưng đầu vào & 21 & 21\\
+		Số thành phần chính giữ lại & 11 & 11\\
+		Tỷ lệ phương sai giải thích & 96.90\% & 96.96\%\\
+		\bottomrule
+	\end{tabular} % Đã sửa thành tabular để đồng bộ với begin
 \end{table}
 
-Như có thể thấy từ Bảng~\ref{tab:compare1}, tốc độ nhanh hơn hơn 3 lần so với [21]. Trong nghiên cứu này, chúng tôi chia dữ liệu thành 80\% để huấn luyện mô hình và 20\% để kiểm thử. Sau đó, chúng tôi so sánh các chỉ số định lượng khác về lợi ích đạt được (xem Bảng~\ref{tab:compare1}). Ở đây, phương pháp của chúng tôi a) là kết quả không cân bằng lớp và b) là kết quả có cân bằng lớp.
+\noindent Kết quả PCA cho thấy với ngưỡng 95\% phương sai, 11 thành phần chính được giữ lại, giải thích được 96,90\% phương sai với Dataset 1 và 96.96\% đối với Dataset 2. Trước PCA có 21 đặc trưng, sau tiền xử lý và sau PCA còn 11 đặc trưng, giảm gần một nửa số đặc trưng nhưng vẫn giữ được gần như toàn bộ thông tin.
+
+\noindent Hình~\ref{fig:cumulative_variance-DS1}, ~\ref{fig:cumulative_variance-DS2} thể hiện phương sai tích lũy theo thành phần của Dataset 1,2, cho thấy phương sai tích lũy như thế nào khi sử dụng phương pháp thành phần chính. 
+
+\noindent Hình~\ref{fig:explained_variance-DS1}, ~\ref{fig:explained_variance-DS2} minh họa tỷ lệ phần trăm phương sai được giải thích bởi từng thành phần, cho phép ước lượng đóng góp của chúng vào tổng phương sai dữ liệu.
+
+\noindent Phân tích chi tiết theo từng thành phần cho thấy hai thành phần đầu tiên đóng góp lớn nhất: PC1 giải thích khoảng 30.9\% phương sai và PC2 giải thích thêm khoảng 15.6\% (cộng dồn khoảng 46.5\%) — tỷ lệ gần như giống hệt nhau giữa Dataset 1 và Dataset 2, cho thấy cấu trúc tương quan giữa các đặc trưng khá ổn định dù quy mô mẫu chênh lệch rất lớn (5,110 so với 5,542,261 bản ghi). Từ PC3 trở đi, mỗi thành phần chỉ đóng góp thêm dưới 12\%, giảm dần đều cho đến khi đạt ngưỡng 95\% ở thành phần thứ 11.
+
+\begin{figure}[H] %ptich dac trung%
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH (ÉP THẲNG HÀNG ĐÁY) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds1-cumulative_variance.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds1-explained_variance.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chữ
+	
+	% === HÀNG 2: HIỂN THỊ TỰ ĐỘNG TIÊU ĐỀ (ÉP THẲNG HÀNG ĐỈNH CHỮ) ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Phương sai tích lũy theo thành phần - Dataset 1}
+		\label{fig:cumulative_variance-DS1}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Tỷ lệ phương sai được giải thích bởi từng thành phần - Dataset 1}
+		\label{fig:explained_variance-DS1}
+	\end{minipage}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH (ÉP THẲNG HÀNG ĐÁY) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds2-cumulative_variance.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds2-explained_variance.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chữ
+	
+	% === HÀNG 2: HIỂN THỊ TỰ ĐỘNG TIÊU ĐỀ (ÉP THẲNG HÀNG ĐỈNH CHỮ) ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Phương sai tích lũy theo thành phần - Dataset 2}
+		\label{fig:cumulative_variance-DS2}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Tỷ lệ phương sai được giải thích bởi từng thành phần - Dataset 2}
+		\label{fig:explained_variance-DS2}
+	\end{minipage}
+\end{figure}
+
+\noindent Hình~\ref{fig:ds1-pc1_loadings.png},~\ref{fig:ds1-pc2_loadings.png} cho thấy ở Dataset 1 thành phần thứ nhất chịu ảnh hưởng đáng kể bởi age (tuổi), bmi và avg\_glucose\_level. Thành phần thứ hai chịu ảnh hưởng nhiều nhất bởi avg\_glucose\_level. Điều này cũng tương tự khi phân tích ở Dataset 2 (Hình~\ref{fig:ds2-pc1_loadings.png},~\ref{fig:ds2-pc2_loadings.png} )
+
+\begin{figure}[H] %pca-load%
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH (ÉP THẲNG HÀNG ĐÁY) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds1-pc1_loadings.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds1-pc2_loadings.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chữ
+	
+	% === HÀNG 2: HIỂN THỊ TỰ ĐỘNG TIÊU ĐỀ (ÉP THẲNG HÀNG ĐỈNH CHỮ) ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Trọng số đặc trưng trong thành phần chính thứ nhất - Dataset 1}
+		\label{fig:ds1-pc1_loadings.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Trọng số đặc trưng trong thành phần chính thứ hai - Dataset 1}
+		\label{fig:ds1-pc2_loadings.png}
+	\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH (ÉP THẲNG HÀNG ĐÁY) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds2-pc1_loadings.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures_original/ds2-pc2_loadings.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chữ
+	
+	% === HÀNG 2: HIỂN THỊ TỰ ĐỘNG TIÊU ĐỀ (ÉP THẲNG HÀNG ĐỈNH CHỮ) ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Trọng số đặc trưng trong thành phần chính thứ nhất - Dataset 2}
+		\label{fig:ds2-pc1_loadings.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Trọng số đặc trưng trong thành phần chính thứ hai - Dataset 2}
+		\label{fig:ds2-pc2_loadings.png}
+	\end{minipage}
+\end{figure}
+
+\section{Hiệu năng mô hình cơ sở (baseline)}
+\noindent Trước khi cân bằng lớp và tinh chỉnh siêu tham số, XGBoost với tham số mặc định được huấn luyện trực tiếp trên dữ liệu mất cân bằng gốc, có và không có PCA, để làm mốc so sánh (baseline). Bảng~\ref{tab:baseline_metrics_new} trình bày kết quả trên tập kiểm tra.
 
 \begin{table}[H]
-\centering
-\caption{So sánh kết quả thu được với kết quả hiện có}\label{tab:compare1}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrrrrrrrr}
-\toprule
-& \multicolumn{3}{c}{\textbf{Precision}} & \multicolumn{3}{c}{\textbf{Recall}} & \multicolumn{3}{c}{\textbf{F1-score}} & \multicolumn{3}{c}{\textbf{Support}}\\
-\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}
-& [21] & a) & b) & [21] & a) & b) & [21] & a) & b) & [21] & a) & b)\\
-\midrule
-0 & 0.97 & 0.95 & 0.96 & 0.87 & 0.97 & 0.93 & 0.92 & 0.96 & 0.94 & 960 & 960 & 976\\
-1 & 0.21 & 0.24 & 0.93 & 0.52 & 0.15 & 0.96 & 0.29 & 0.18 & 0.95 & 62 & 62 & 968\\
-accuracy & \multicolumn{3}{c}{} & \multicolumn{3}{c}{} & 0.85 & 0.92 & 0.95 & 1022 & 1022 & 1944\\
-macro avg & 0.59 & 0.59 & 0.95 & 0.69 & 0.56 & 0.95 & 0.61 & 0.57 & 0.95 & 1022 & 1022 & 1944\\
-weighted avg & 0.92 & 0.90 & 0.95 & 0.85 & 0.92 & 0.95 & 0.88 & 0.92 & 0.95 & 1022 & 1022 & 1944\\
-\bottomrule
-\end{tabular}}
+	\centering
+	\caption{Hiệu năng mô hình cơ sở (baseline) trên tập kiểm tra}
+	\label{tab:baseline_metrics_new}
+	\renewcommand{\arraystretch}{1.2} % Tăng khoảng cách hàng cho thoáng bảng
+	\begin{tabular}{lrrrr}
+		\toprule
+		\textbf{Chỉ tiêu} & \textbf{D1-không PCA} & \textbf{D1-có PCA} & \textbf{D2-không PCA} & \textbf{D2-có PCA}\\
+		\midrule
+		Accuracy & 0.9501 & 0.9491 & 0.9612 & 0.9638\\
+		Precision (lớp 1) & 0.4286 & 0.3333 & 0.9152 & 0.9723\\
+		Recall (lớp 1) & 0.0600 & 0.0400 & 0.0986 & 0.1538\\
+		F1 (lớp 1) & 0.1053 & 0.0714 & 0.1780 & 0.2656\\
+		ROC-AUC & 0.8307 & 0.8011 & 0.9319 & 0.9641\\
+		MCC & 0.1462 & 0.1013 & 0.2934 & 0.3792\\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Hiệu năng của mô hình đề xuất được đánh giá toàn diện trên Dataset 1. Ma trận nhầm lẫn (Hình~\ref{fig:cm1}), đường cong ROC-AUC (Hình~\ref{fig:roc1}) và kết quả kiểm định chéo 10 fold (Bảng~\ref{tab:cv1}) cung cấp cái nhìn chi tiết về độ chính xác phân loại và độ vững của phương pháp.
+\noindent Kết quả mô hình baseline trên Dataset 1 và Dataset 2 cho thấy chỉ số độ chính xác (Accuracy) đạt mức cao (95–96\%), nhưng Recall ở lớp dương lại rơi xuống mức rất thấp (4–15\%). Đây là minh chứng điển hình cho hiện tượng "cạm bẫy độ chính xác" (Accuracy Trap) thường gặp trên các tập dữ liệu mất cân bằng nghiêm trọng. Cụ thể, khi lớp dương chỉ chiếm khoảng 4.3–4.9\% tổng số mẫu, một mô hình dự đoán baseline (luôn đưa ra kết luận "không đột quỵ") vẫn dễ dàng đạt được mức Accuracy tương đương nhưng hoàn toàn thất bại trong việc phát hiện ca bệnh.
 
-Kết quả được thu trong môi trường Google Colab (bộ xử lý Intel(R) Xeon(R) CPU @ 2.20 GHz). Trong môi trường này, chúng tôi đạt độ chính xác 95\%, vượt kết quả được báo cáo trong [21]. Việc tăng độ chính xác đạt được đồng thời với giảm thời gian thực thi nhờ giảm chiều dữ liệu.
+\begin{itemize}
+	\item Accuracy không còn đại diện cho hiệu năng thực tế của mô hình trong bài toán chẩn đoán y khoa này, đòi hỏi phải bổ sung hoặc thay thế bằng các chỉ số phù hợp hơn như Precision, Recall, F1-score hay AUC-ROC.
+	\item Kết quả baseline khẳng định tính cấp thiết của việc triển khai các giải pháp xử lý ở giai đoạn tiếp theo, bao gồm việc áp dụng các kỹ thuật cân bằng dữ liệu (Oversampling, Undersampling, SMOTE) kết hợp với tinh chỉnh siêu tham số nhằm nâng cao năng lực nhận diện lớp dương cho mô hình.
+\end{itemize}
 
-\paperfig[0.64\linewidth]{figures_original/fig-014.jpg}{Ma trận nhầm lẫn (Dataset 1).\label{fig:cm1}}
-\paperfig[0.76\linewidth]{figures_original/fig-015.jpg}{Đường cong ROC-AUC (Dataset 1).\label{fig:roc1}}
 
-\begin{table}[H]
-\centering
-\caption{Kết quả kiểm định chéo 10 fold (Dataset 1)}\label{tab:cv1}
-\begin{tabularx}{\textwidth}{lX}
-\toprule
-\textbf{Chỉ số đánh giá} & \textbf{Giá trị}\\
-\midrule
-Độ chính xác trung bình & 0.9532\\
-Độ chính xác từng fold & 0.95344473, 0.95858612, 0.94830334, 0.94830334, 0.94958869, 0.95215938, 0.95851995, 0.94951094, 0.95594595, 0.95723295\\
-\bottomrule
-\end{tabularx}
+%dataset 1- confusion x roc
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH CÓ CÙNG CHIỀU CAO (ÉP CÂN BẰNG) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds1-non pca-confusion_matrix.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds1-with pca-confusion_matrix.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chú thích
+	
+	% === HÀNG 2: THẲNG HÀNG ĐỈNH CHỮ CHO CAPTION ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình không có PCA - Dataset 1}
+		\label{fig:ds1-non pca-confusion_matrix}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình có PCA - Dataset 1}
+		\label{fig:ds1-with pca-confusion_matrix}
+	\end{minipage}
+\end{figure}
+
+
+%dataset 1- confusion x roc
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH CÓ CÙNG CHIỀU CAO (ÉP CÂN BẰNG) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds2-non pca-confusion_matrix.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds2-with pca-confusion_matrix.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chú thích
+	
+	% === HÀNG 2: THẲNG HÀNG ĐỈNH CHỮ CHO CAPTION ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình không có PCA - Dataset 2}
+		\label{fig:ds2-non pca-confusion_matrix}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình có PCA - Dataset 2}
+		\label{fig:ds2-with pca-confusion_matrix}
+	\end{minipage}
+\end{figure}
+
+\noindent Nhìn vào ma trận nhầm lẫn của bước baseline, số ca dương tính được phát hiện đúng rất thấp: ở Dataset 1 trên 50 ca đột quỵ thật trong tập kiểm tra, mô hình chỉ phát hiện đúng 2 ca (có PCA) hoặc 3 ca (không PCA); ở Dataset 2 trên 47,192 ca dương tính, mô hình phát hiện đúng 7,260 ca (có PCA, recall 15.4\%) và 4,653 ca (không PCA, recall 9.9\%). Đây là biểu hiện cụ thể của cạm bẫy accuracy đã nêu ở trên: mô hình gần như luôn dự đoán lớp đa số, khiến accuracy cao nhưng gần như vô dụng cho mục tiêu sàng lọc lâm sàng.
+
+\section{Tinh chỉnh siêu tham số (Grid Search)}
+
+Bảng ~\ref{tab:sieuthamso_gridsearch} trình bày siêu tham số tốt nhất được tìm bằng Grid Search, sử dụng ROC-AUC làm tiêu chí lựa chọn, kết hợp Stratified K-Fold, với việc cân bằng lớp và PCA được đặt bên trong pipeline (chỉ fit trên phần train của mỗi fold) để tránh rò rỉ dữ liệu.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Siêu tham số tốt nhất tìm được bằng Grid Search}
+	\label{tab:sieuthamso_gridsearch}
+	\vspace{0.2cm}
+	\begin{tabular}{lcc}
+		\toprule
+		\textbf{Siêu tham số} & \textbf{Dataset 1} & \textbf{Dataset 2} \\
+		\midrule
+		{n\_estimators} & 200 & 400 \\
+		{max\_depth} & 3 & 5 \\
+		{learning\_rate} & 0.03 & 0.10 \\
+		{min\_child\_weight} & 5 & 1 \\
+		{gamma} & 0.2 & 0.0 \\
+		{subsample} & 0.8 & 0.8 \\
+		{colsample\_bytree} & 0.8 & 0.8 \\
+		\midrule
+		\textbf{ROC-AUC tốt nhất (CV tuning)} & \textbf{0.8028} & \textbf{0.9913} \\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Phương pháp đề xuất trong bài báo cũng được kiểm thử trên Dataset 2. Bảng~\ref{tab:d2pca} trình bày kết quả thu được khi không dùng và khi dùng PCA.
+\noindent Không gian tìm kiếm của Grid Search thực chất chỉ biến thiên 5 trong 7 siêu tham số được liệt kê ở Chương 2 — độ sâu cây (max depth), learning rate, số lượng cây (n estimators), gamma và minimum child weight, mỗi tham số 2 mức giá trị (2⁵ = 32 tổ hợp); tỷ lệ mẫu huấn luyện (subsample) và tỷ lệ đặc trưng (colsample\_bytree) được giữ cố định ở 0.8. Grid Search tự đánh giá mỗi tổ hợp bằng kiểm định chéo nội bộ chỉ 3-fold (để tiết kiệm thời gian tìm kiếm). ROC-AUC tốt nhất tìm được trong quá trình tìm kiếm (3-fold) là 0.8028 ở Dataset 1 và 0.9913 ở Dataset 2. Với Dataset 2, do quy mô  lớn, Grid Search được thực hiện trên một mẫu 150,000 dòng của tập huấn luyện để bảo đảm thời gian chạy hợp lý; mô hình cuối được huấn luyện lại trên toàn bộ tập huấn luyện với siêu tham số đã chọn.
 
-\begin{table}[H]
-\centering
-\caption{So sánh kết quả thu được khi không dùng và khi dùng PCA}\label{tab:d2pca}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrrrr}
-\toprule
-& \multicolumn{2}{c}{\textbf{Precision}} & \multicolumn{2}{c}{\textbf{Recall}} & \multicolumn{2}{c}{\textbf{F1-score}} & \multicolumn{2}{c}{\textbf{Support}}\\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
-& Không PCA & Có PCA & Không PCA & Có PCA & Không PCA & Có PCA & Không PCA & Có PCA\\
-\midrule
-0 & 0.98 & 0.99 & 0.92 & 0.97 & 0.95 & 0.98 & 136758 & 10613\\
-1 & 0.93 & 0.97 & 0.98 & 0.99 & 0.96 & 0.98 & 137596 & 10605\\
-accuracy & \multicolumn{2}{c}{0.95 / 0.98} & \multicolumn{2}{c}{} & \multicolumn{2}{c}{} & 274354 & 21218\\
-macro avg & 0.96 & 0.98 & 0.95 & 0.98 & 0.95 & 0.98 & 274354 & 21218\\
-weighted avg & 0.96 & 0.98 & 0.95 & 0.98 & 0.95 & 0.98 & 273454 & 21218\\
-\bottomrule
-\end{tabular}}
+\section{Kết quả kiểm định chéo (Cross-validation)}
+
+Với siêu tham số đã tinh chỉnh (ở bước Grid search), mô hình được đánh giá bằng kiểm định chéo 10-fold trên tập huấn luyện (cân bằng lớp và PCA chỉ fit trên phần train của mỗi fold, không rò rỉ sang fold kiểm định). Kết quả được trình bày ở bảng~\ref{tab:ketqua_cv10fold}.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Kết quả kiểm định chéo 10-fold (trung bình $\pm$ độ lệch chuẩn)}
+	\label{tab:ketqua_cv10fold}
+	\vspace{0.2cm}
+	\begin{tabular}{lcc}
+		\toprule
+		\textbf{Chỉ số} & \textbf{Dataset 1} & \textbf{Dataset 2} \\
+		\midrule
+		Accuracy & $0.7652 \pm 0.0308$ & $0.9654 \pm 0.0010$ \\
+		Precision & $0.1420 \pm 0.0302$ & $0.5519 \pm 0.0073$ \\
+		Recall & $0.7426 \pm 0.1065$ & $0.9937 \pm 0.0005$ \\
+		F1-score & $0.2381 \pm 0.0472$ & $0.7097 \pm 0.0060$ \\
+		ROC-AUC & $0.8238 \pm 0.0425$ & $0.9975 \pm 0.0002$ \\
+		Thời gian CV (giây) & 4.59 & 93.87 \\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Các kiểm định ý nghĩa thống kê được thực hiện để xác nhận khác biệt hiệu năng giữa phương pháp dựa trên PCA và baseline không PCA. Hai kiểm định được sử dụng: paired t-test và Mann--Whitney U. Kiểm định đầu tiên phù hợp để so sánh hai mẫu liên quan, chẳng hạn kết quả từ cùng một tập dữ liệu dưới hai phương pháp khác nhau. Mann--Whitney U so sánh phân bố của hai mẫu độc lập và đặc biệt hữu ích khi giả định phân phối chuẩn không thỏa mãn. Kết quả trong Bảng~\ref{tab:pvalue} cho thấy có khác biệt có ý nghĩa thống kê giữa phương pháp PCA và baseline ($p$-value $<0.05$). Điều này gợi ý rằng bổ sung PCA tạo ra cải thiện có ý nghĩa so với baseline.
+\noindent Ở Dataset 1, accuracy dao động khá mạnh giữa các fold, từ 0.731 đến 0.816, do mỗi fold kiểm định chỉ có khoảng 20 ca dương tính — cỡ mẫu nhỏ khiến kết quả nhạy với cách chia dữ liệu; ở Dataset 2, accuracy giữa các fold rất ổn định, chỉ dao động trong khoảng 0.964–0.967, nhờ mỗi fold có khoảng 18,877 ca dương tính, đủ lớn để làm mượt sự biến động.
 
-\begin{table}[H]
-\centering
-\caption{$p$-value của các kiểm định thống kê}\label{tab:pvalue}
-\begin{tabular}{lr}
-\toprule
-\textbf{Kiểm định} & \textbf{$p$-value}\\
-\midrule
-Paired t-test & $5.475817566209107\times10^{-10}$\\
-Mann--Whitney U test & 0.0001796225049907081\\
-\bottomrule
-\end{tabular}
+\section{Hiệu năng trên tập kiểm tra (hold-out)}
+
+\noindent Toàn bộ hành trình cải thiện mô hình qua từng bước xử lý, đo trên tập kiểm tra, cho thấy rõ sự đánh đổi giữa các chỉ số. Kết quả chi tiết các bước thực hiện được tổng hợp ở bảng~\ref{tab:results_updated}. Ở Dataset 1, Accuracy giảm dần từ 95.0\% (baseline không PCA) qua 82.5\% (cân bằng lớp + PCA) xuống còn 78.2\% (mô hình cuối đã tinh chỉnh), trong khi Recall tăng liên tục từ 6\% lên 44\% rồi 78\% và MCC cải thiện từ 0.146 lên 0.282; ở Dataset 2, Accuracy giảm tạm thời từ 96.1\% xuống 85.7\% ở bước cân bằng lớp rồi phục hồi lên 96.6\% sau khi tinh chỉnh, trong khi Recall tăng từ 9.9\% lên trên 99\% và MCC tăng từ 0.293 lên 0.732. 
+
+\begin{table}[htbp]
+	\centering
+	\caption{Kết quả thực nghiệm chi tiết trên hai tập dữ liệu}
+	\label{tab:results_updated}
+	\resizebox{\textwidth}{!}{ % <--- Tự động co giãn vừa khít màn hình/trang giấy
+		\begin{tabular}{lllccccccc}
+			\toprule
+			\textbf{Dataset} & \textbf{Stage} & \textbf{Variant} & \textbf{N-feats} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{AUC} & \textbf{MCC} \\
+			\midrule
+			Dataset 1 & Baseline & without\_pca & 21 & \textbf{0.950} & 0.429 & 0.060 & 0.105 & \textbf{0.831} & 0.146 \\
+			&          & with\_pca    & 11 & 0.949 & 0.333 & 0.040 & 0.071 & 0.801 & 0.101 \\
+			\cmidrule{2-10}
+			& Baseline Tuning & balance\_only & 21 & 0.912 & 0.130 & 0.140 & 0.135 & 0.788 & 0.088 \\
+			&          & balance\_pca & 11 & 0.825 & 0.127 & 0.440 & 0.197 & 0.772 & 0.164 \\
+			&          & balance\_pca\_tuned & 11 & 0.782 & \textbf{0.155} & \textbf{0.780} & \textbf{0.259} & 0.812 & \textbf{0.282} \\
+			\midrule
+			Dataset 2 & Baseline & without\_pca & 21 & 0.961 & 0.915 & 0.099 & 0.178 & 0.932 & 0.293 \\
+			&          & with\_pca    & 11 & 0.964 & \textbf{0.972} & 0.154 & 0.266 & 0.964 & 0.379 \\
+			\cmidrule{2-10}
+			& Baseline Tuning & balance\_only & 21 & 0.817 & 0.181 & 0.936 & 0.303 & 0.938 & 0.364 \\
+			&          & balance\_pca & 11 & 0.857 & 0.226 & 0.972 & 0.367 & 0.971 & 0.430 \\
+			&          & balance\_pca\_tuned & 11 & \textbf{0.966} & 0.559 & \textbf{0.994} & \textbf{0.716} & \textbf{0.998} & \textbf{0.732} \\
+			\bottomrule
+		\end{tabular}
+	} % <--- Đóng ngoặc lệnh \resizebox
+\end{table}
+	
+
+\noindent Kết quả thực nghiệm chỉ ra rằng việc áp dụng đơn lẻ các thuật toán phân loại trên dữ liệu gốc (Baseline) không đem lại hiệu quả thực tế do ảnh hưởng của mất cân bằng nhãn. Ngược lại, chu trình kết hợp giữa giảm chiều dữ liệu (PCA), xử lý cân bằng mẫu, và tinh chỉnh siêu tham số (Tuning) là chiến lược tối ưu nhất. Phương pháp này không chỉ giúp giảm đáng kể chi phí tính toán (giảm từ 21 xuống 11 đặc trưng) mà còn tối ưu hóa đồng thời các chỉ số F1-score, AUC và MCC, đặc biệt phát huy hiệu quả vượt trội trên không gian mẫu lớn của Dataset 2.
+
+
+\noindent Mô hình cuối cùng được huấn luyện lại trên toàn bộ tập huấn luyện và đánh giá một lần trên tập kiểm tra (hold-out), giữ nguyên tỷ lệ mất cân bằng gốc được trình bày kết quả ở bảng~\ref{tab:hieunang_holdout}, và các hình vẽ ma trận nhầm lẫn (confusion matrix) và ROC curve.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Hiệu năng trên tập kiểm tra (hold-out cuối cùng)}
+	\label{tab:hieunang_holdout}
+	\vspace{0,2cm}
+	\begin{tabular}{lcc}
+		\toprule
+		\textbf{Chỉ số} & \textbf{\begin{tabular}[c]{@{}c@{}}Dataset 1\\ ($n = 1,022$)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Dataset 2\\ ($n = 1,108,453$)\end{tabular}} \\
+		\midrule
+		Accuracy & 0.7818 & 0.9664 \\
+		Precision (lớp 1) & 0.1554 & 0.5590 \\
+		Recall (lớp 1) & 0.7800 & 0.9944 \\
+		F1 (lớp 1) & 0.2591 & 0.7157 \\
+		ROC-AUC & 0.8118 & 0.9976 \\
+		MCC & 0.2816 & 0.7322 \\
+		Cohen's Kappa & 0.1933 & 0.6993 \\
+		TN / FP / FN / TP & 760 / 212 / 11 / 39 & 1,024,239 / 37,022 / 263 / 46,929 \\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Hiệu năng của phương pháp đề xuất khi có và không PCA tiếp tục được phân tích bằng ma trận nhầm lẫn và đường cong ROC-AUC. Hình~\ref{fig:cm2pca} trình bày ma trận nhầm lẫn cho Dataset 2 có PCA, trong khi Hình~\ref{fig:roc2pca} cho đường cong ROC-AUC tương ứng. Để so sánh, Hình~\ref{fig:cm2nopca} hiển thị ma trận nhầm lẫn cho Dataset 2 không PCA, và Hình~\ref{fig:roc2nopca} minh họa ROC-AUC cho cùng tập dữ liệu khi không PCA. Các trực quan này cung cấp so sánh rõ ràng về khác biệt hiệu năng giữa hai cách tiếp cận.
 
-\paperfig[0.64\linewidth]{figures_original/fig-016.jpg}{Ma trận nhầm lẫn (Dataset 2, có PCA).\label{fig:cm2pca}}
-\paperfig[0.76\linewidth]{figures_original/fig-017.jpg}{Đường cong ROC-AUC (Dataset 2, có PCA).\label{fig:roc2pca}}
-\paperfig[0.64\linewidth]{figures_original/fig-018.jpg}{Ma trận nhầm lẫn (Dataset 2, không PCA).\label{fig:cm2nopca}}
-\paperfig[0.76\linewidth]{figures_original/fig-019.jpg}{Đường cong ROC-AUC (Dataset 2, không PCA).\label{fig:roc2nopca}}
+%dataset 1- confusion x roc
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH CÓ CÙNG CHIỀU CAO (ÉP CÂN BẰNG) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds1-final_confusion_matrix.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds1-final_roc_curve.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chú thích
+	
+	% === HÀNG 2: THẲNG HÀNG ĐỈNH CHỮ CHO CAPTION ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình cuối cùng - Dataset 1}
+		\label{fig:ds1-final_confusion_matrix}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Đường cong ROC-AUC của mô hình cuối cùng - Dataset 1}
+		\label{fig:ds1-final_roc_curve}
+	\end{minipage}
+\end{figure}
 
-Sau khi sử dụng PCA, số chiều được giảm còn 13 đặc trưng giải thích 95\% phương sai. Hình~\ref{fig:cum2} và Hình~\ref{fig:scree2} lần lượt thể hiện phương sai tích lũy theo thành phần và tỷ lệ phần trăm phương sai được giải thích bởi từng thành phần.
+%dataset 2- confusion x roc
+\begin{figure}[H]
+	\centering
+	% === HÀNG 1: HIỂN THỊ 2 ẢNH CÓ CÙNG CHIỀU CAO (ÉP CÂN BẰNG) ===
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds2-final_confusion_matrix.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[height=8cm, keepaspectratio]{figures_original/ds2-final_roc_curve.png}
+	\end{minipage}
+	
+	\vspace{0.2cm} % Khoảng cách giữa ảnh và chú thích
+	
+	% === HÀNG 2: THẲNG HÀNG ĐỈNH CHỮ CHO CAPTION ===
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Ma trận nhầm lẫn của mô hình cuối cùng - Dataset 2}
+		\label{fig:ds2-final_confusion_matrix}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.48\textwidth}
+		\centering
+		\caption{Đường cong ROC-AUC của mô hình cuối cùng - Dataset 2}
+		\label{fig:ds2-final_roc_curve}
+	\end{minipage}
+\end{figure}
 
-\paperfig[0.72\linewidth]{figures_original/fig-020.jpg}{Phương sai tích lũy theo thành phần cho Dataset 2.\label{fig:cum2}}
-\paperfig[0.72\linewidth]{figures_original/fig-021.jpg}{Tỷ lệ phương sai được giải thích bởi từng thành phần cho Dataset 2.\label{fig:scree2}}
+\noindent Ở Dataset 1, precision thấp (15.5\%) đi cùng recall khá cao (78\%) phản ánh đúng đặc trưng của một bài toán sàng lọc trên dữ liệu mất cân bằng mạnh: trong số 1,022 mẫu kiểm tra chỉ có 50 mẫu dương tính, mô hình "bắt" được 39/50 ca thật (đánh đổi bằng 212 cảnh báo giả trên 972 mẫu âm tính). Ở Dataset 2, quy mô tập kiểm tra rất lớn (hơn 1.1 triệu mẫu) giúp mô hình đạt cả recall (99.4\%) và precision (55.9\%) tốt hơn nhiều, MCC 0.732 cho thấy mô hình phân biệt hai lớp khá tốt dù dữ liệu mất cân bằng. 
 
-Tương tự Dataset 1, chúng tôi áp dụng các phương pháp trí tuệ nhân tạo giải thích được. Hình~\ref{fig:water2} minh họa SHAP Waterfall cho mẫu dữ liệu đầu tiên của Dataset 2, thể hiện tác động của các đặc trưng quan trọng lên dự báo mô hình. Đóng góp đáng kể nhất đến từ mức glucose máu: tăng chỉ số này dẫn đến tăng giá trị dự báo của mô hình. Tuổi cũng có ảnh hưởng đáng kể, dù kém rõ hơn glucose. Giới tính nữ có tác động âm, nghĩa là đối với nữ, giá trị dự báo trung bình thấp hơn nam. Làm việc trong khu vực công và BMI có tác động âm ở mức vừa phải. Các đặc trưng khác cũng ảnh hưởng đến dự báo nhưng nhỏ hơn. Như vậy, mức glucose và tuổi là các biến dự báo chủ chốt trong mô hình, cho thấy chúng có ảnh hưởng quyết định đến kết quả cuối cùng.
 
-\paperfig[0.82\linewidth]{figures_original/fig-022.jpg}{SHAP Waterfall cho mẫu dữ liệu đầu tiên (Dataset 2).\label{fig:water2}}
+\section{Kiểm định ý nghĩa thống kê}
 
-Hình~\ref{fig:bar2} cho thấy SHAP Bar của Dataset 2. Có thể thấy ảnh hưởng lớn nhất lên dự báo mô hình trong trường hợp này là tuổi: khi tuổi bệnh nhân tăng, xác suất giá trị dự báo cao hơn cũng tăng. Mức glucose máu cũng có tác động dương đáng kể lên kết quả dự báo. Làm việc trong khu vực tư nhân là một yếu tố dương bổ sung. Cả hai giới (nam và nữ) đều ảnh hưởng đến dự báo, nhưng ảnh hưởng của nữ rõ hơn một chút. Các đặc trưng khác có ít hoặc gần như không có tác động đến kết quả dự báo.
+\noindent Các kiểm định ý nghĩa thống kê được thực hiện để xác nhận khác biệt hiệu năng giữa phương pháp có PCA và không có PCA. Hai kiểm định được sử dụng: paired t-test (phù hợp vì hai phương pháp dùng cùng bộ fold kiểm định chéo) và Mann-Whitney U (giả định mẫu độc lập, được thêm vào để đối chiếu). Bảng 3.7 trình bày kết quả, so sánh accuracy trung bình của 10 fold giữa pipeline "Cân bằng lớp → XGBoost" (không PCA) và "Cân bằng lớp → PCA → XGBoost" (có PCA), dùng cùng siêu tham số đã tinh chỉnh.
 
-\paperfig[0.82\linewidth]{figures_original/fig-023.jpg}{SHAP Bar (Dataset 2).\label{fig:bar2}}
+\begin{table}[htbp]
+	\centering
+	\caption{So sánh hiệu năng và kiểm định thống kê tác động của PCA}
+	\label{tab:sosanh_pca}
+	\vspace{0,2cm}
+	\begin{tabular}{lcc}
+		\toprule
+		\textbf{Chỉ tiêu} & \textbf{Dataset 1} & \textbf{Dataset 2} \\
+		\midrule
+		Accuracy TB - không PCA & 0.8146 & 0.9214 \\
+		Accuracy TB - có PCA & 0.7652 & 0.9654 \\
+		Chênh lệch (có PCA - không PCA) & -0.0494 & +0.0440 \\
+		p-value (paired t-test) & $8.43 \times 10^{-5}$ & $6.44 \times 10^{-15}$ \\
+		p-value (Mann-Whitney U) & 0.00282 & 0.000183 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
-Hình~\ref{fig:bee2} một lần nữa cho thấy các yếu tố có ảnh hưởng lớn nhất là tuổi, mức glucose, giới tính, BMI và loại công việc, điều phù hợp với kỳ vọng.
 
-\paperfig[0.82\linewidth]{figures_original/fig-024.jpg}{SHAP Beeswarm (Dataset 2).\label{fig:bee2}}
+\noindent Cả hai kiểm định đều dựa trên 10 cặp giá trị accuracy tương ứng với 10 fold kiểm định chéo đủ số quan sát để áp dụng paired t-test một cách hợp lý. Kết quả kiểm định thống kê cho một phát hiện quan trọng: PCA không phải lúc nào cũng có lợi. Trên Dataset 2 (rất lớn, hơn 4.4 triệu dòng huấn luyện), PCA cải thiện có ý nghĩa thống kê Accuracy trung bình (tăng 0.0440 từ 0.9214 lên 0.9654, p < 0.001), phù hợp với kỳ vọng rằng giảm chiều giúp loại bỏ nhiễu trên tập dữ liệu lớn. Ngược lại, trên Dataset 1 (chỉ 4,088 dòng huấn luyện), PCA làm giảm có ý nghĩa thống kê Accuracy trung bình (giảm 0.0494 từ 0.8146 xuống 0.7652, p < 0.001) — có thể do việc nén còn 11 thành phần chính đã loại bỏ một phần thông tin hữu ích cho việc phân biệt lớp thiểu số vốn đã rất ít mẫu.
 
-Kết quả nghiên cứu chứng minh hiệu quả của việc tích hợp PCA với XGBoost trong dự đoán nguy cơ đột quỵ. Triển khai PCA được tối ưu làm giảm đáng kể số chiều dữ liệu, từ đó tăng cả tốc độ xử lý và độ chính xác của XGBoost. Việc sử dụng thêm SHAP cho phép xác định các biến gốc quan trọng nhất ảnh hưởng đến kết quả dự báo. Sự tích hợp này đặc biệt có giá trị trong chẩn đoán y khoa, nơi cả tốc độ lẫn độ chính xác của phân tích đều quan trọng vì liên quan đến tính mạng con người.
+\noindent Cả hai kiểm định đều dựa trên 10 cặp giá trị accuracy tương ứng với 10 fold kiểm định chéo đủ số quan sát để áp dụng paired t-test một cách hợp lý. Chênh lệch trung bình Accuracy (có PCA trừ không PCA) là -0,0494 ở Dataset 1 và +0,0440 ở Dataset 2 — hai dấu trái ngược nhau minh họa rõ việc lợi ích của PCA phụ thuộc mạnh vào quy mô và đặc điểm của từng tập dữ liệu, không phải một quy luật cố định.
+	
+\section{Phân tích trọng số PCA và kết quả SHAP}
+\noindent Sau khi áp dụng PCA, các thành phần chính được thu được cùng với trọng số (loadings) của đặc trưng gốc trong các thành phần mới. 
+
+\noindent Để diễn giải dự báo, phương pháp SHAP được áp dụng. Các hình SHAP Waterfall, Bar và Beeswarm cho thấy mức glucose máu trung bình, tuổi, loại công việc và giới tính nằm trong nhóm đặc trưng có ảnh hưởng lớn nhất đến dự báo ở cả hai tập dữ liệu (Dataset 1: 1.090/0.495/0.488; Dataset 2: 1.800/0.952/0.842), phù hợp với hiểu biết lâm sàng về các yếu tố nguy cơ đột quỵ.
+
+\paperfig[0.82\linewidth]{figures_original/ds1-shap_pc_waterfall-v2.png}{SHAP Waterfall (Dataset 1).\label{fig:ds1-shap_pc_waterfall}}
+
+\paperfig[0.82\linewidth]{figures_original/ds1-shap_projected_original_bar.png}{SHAP Bar (Dataset 1).\label{fig:ds1-shap_projected_original_bar}}
+
+\paperfig[0.82\linewidth]{figures_original/ds1-shap_projected_original_beeswarm.png}{SHAP Beewarm (Dataset 1).\label{fig:ds1-shap_projected_original_beeswarm}}
+
+\paperfig[0.82\linewidth]{figures_original/ds2-shap_pc_waterfall-v2.png}{SHAP Waterfall (Dataset 2).\label{fig:ds2-shap_pc_waterfall}}
+
+\paperfig[0.82\linewidth]{figures_original/ds2-shap_projected_original_bar.png}{SHAP Bar (Dataset 2).\label{fig:ds2-shap_projected_original_bar}}
+
+\paperfig[0.82\linewidth]{figures_original/ds2-shap_projected_original_beeswarm.png}{SHAP Beewarm (Dataset 2).\label{fig:ds2-shap_projected_original_beeswarm}}
+
+\noindent Kết quả nghiên cứu chứng minh hiệu quả của việc tích hợp PCA với XGBoost trong dự đoán nguy cơ đột quỵ. Triển khai PCA được tối ưu làm giảm đáng kể số chiều dữ liệu, từ đó tăng cả tốc độ xử lý và độ chính xác của XGBoost. Việc sử dụng thêm SHAP cho phép xác định các biến gốc quan trọng nhất ảnh hưởng đến kết quả dự báo. Sự tích hợp này đặc biệt có giá trị trong chẩn đoán y khoa, nơi cả tốc độ lẫn độ chính xác của phân tích đều quan trọng vì liên quan đến tính mạng con người.
+
+\section{Đánh giá hiệu năng song song hóa OpenMP}
+
+\noindent Việc song song hóa thuật toán Jacobi bằng OpenMP được đánh giá bằng thí nghiệm trên các ma trận ngẫu nhiên kích thước N = 100, 200, 300, 400, 500 (giá trị được điền từ 0 đến 1, mô phỏng chuẩn hóa MinMax), so sánh thời gian tính toán tuần tự và song song. Kết quả được lưu dưới dạng biểu đồ thời gian thực thi và biểu đồ speedup, cho thấy xu hướng chung là OpenMP giúp giảm thời gian tính toán, và mức giảm càng rõ rệt khi kích thước ma trận càng lớn.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Thời gian thực thi Jacobi tuần tự và OpenMP}
+	\label{tab:thoi_gian_jacobi}
+	\begin{tabular}{ccccc}
+		\toprule
+		\textbf{N} & \textbf{Tuần tự (s)} & \textbf{OpenMP (s)} & \textbf{Speedup} & \textbf{\begin{tabular}[c]{@{}c@{}}Sai số trị riêng\\ tương đối\end{tabular}} \\
+		\midrule
+		100 & 0.0441 & 0.0731 & 0.604 & 0 \\
+		200 & 0.2521 & 0.2733 & 0.923 & 0 \\
+		300 & 0.9019 & 0.8323 & 1.084 & 0 \\
+		400 & 2.0456 & 1.6355 & 1.251 & 0 \\
+		500 & 4.0797 & 2.6504 & 1.539 & 0 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+	
+\paperfig[0.82\linewidth]{figures_original/execution_time.png}{Thời gian thực thi Jacobi theo kích thước ma trận\label{fig:execution_time}}
+
+\paperfig[0.82\linewidth]{figures_original/openmp_speedup.png}{Speedup của OpenMP so với phiên bản tuần tự\label{fig:openmp_speedup}}
+
+\noindent Kết quả cho thấy OpenMP chưa có lợi thế ở N = 100 và N = 200 (speedup <1, OpenMP chậm hơn do overhead khỏi tạo luồng khi ma trận còn nhỏ), nhưng bắt đầu nhanh hơn ở N = 300. Speedup lần lượt là 0.604; 0.923; 1.084; 1.251 và 1.539 lần.Vì vậy, nhận định phù hợp với kết quả code là song song hóa có lợi khi kích thước bài toán đủ lớn, thay vì khẳng định OpenMP luôn nhanh hơn trên dữ liệu nhỏ.
+
+\noindent Về độ chính xác số học, cả phiên bản tuần tự và song song đều hội tụ sau đúng 20 vòng lặp (sweep) ở mọi kích thước ma trận, với sai số trực giao (orthogonality error) cực nhỏ (dưới 2×10⁻¹⁴) và sai số trị riêng tương đối giữa hai phiên bản bằng 0 — nghĩa là song song hóa bằng OpenMP không đánh đổi độ chính xác để lấy tốc độ.

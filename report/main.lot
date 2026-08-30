@@ -1,0 +1,17 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces So sánh các phương pháp học máy hiện có cho dự đoán đột quỵ}}{4}{table.1.1}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Tổng quan dữ liệu sau làm sạch và chia tập}}{14}{table.caption.9}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kết quả PCA (ngưỡng phương sai giải thích 95\%)}}{14}{table.caption.10}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Hiệu năng mô hình cơ sở (baseline) trên tập kiểm tra}}{17}{table.caption.15}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Siêu tham số tốt nhất tìm được bằng Grid Search}}{19}{table.caption.18}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kết quả kiểm định chéo 10-fold (trung bình $\pm $ độ lệch chuẩn)}}{20}{table.caption.19}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kết quả thực nghiệm chi tiết trên hai tập dữ liệu}}{21}{table.caption.20}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Hiệu năng trên tập kiểm tra (hold-out cuối cùng)}}{22}{table.caption.21}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces So sánh hiệu năng và kiểm định thống kê tác động của PCA}}{24}{table.caption.24}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Thời gian thực thi Jacobi tuần tự và OpenMP}}{28}{table.caption.31}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces So sánh hiệu năng với các nghiên cứu liên quan}}{31}{table.caption.34}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kết quả các chỉ số đánh giá mô hình}}{32}{table.caption.35}%
+\addvspace {10\p@ }

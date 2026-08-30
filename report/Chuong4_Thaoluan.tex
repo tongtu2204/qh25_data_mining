@@ -1,42 +1,50 @@
 \chapter{THẢO LUẬN}
-Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu. Các kết quả chính đã được mô tả trong phần Kết quả. Để so sánh chi tiết hơn với các công trình hiện có và xác định vị trí của phương pháp đề xuất, chúng tôi bổ sung so sánh với các nghiên cứu liên quan. Cụ thể, Bảng~\ref{tab:studies} so sánh phương pháp của chúng tôi với ba công trình trên Dataset 1.
+Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu. Các kết quả chính đã được mô tả trong phần Kết quả. Để so sánh chi tiết hơn với các công trình hiện có và xác định vị trí của phương pháp đề xuất, chúng tôi bổ sung so sánh với các nghiên cứu liên quan. Cụ thể, Bảng~\ref{tab:comparison} so sánh phương pháp của nhóm tác giả với ba công trình trên Dataset 1.
 
-\begin{table}[H]
-\centering
-\caption{So sánh các phương pháp dự đoán và kết quả trong nghiên cứu của chúng tôi với các nghiên cứu khác}\label{tab:studies}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{p{2.2cm}p{5.0cm}p{4.2cm}p{3.2cm}p{4.8cm}}
-\toprule
-\textbf{Thuộc tính} & \textbf{[18]} & \textbf{[33]} & \textbf{[34]} & \textbf{Phương pháp của chúng tôi}\\
-\midrule
-Phương pháp & Hồi quy logistic, cây quyết định, random forest, k-NN, SVM, Naive Bayes & Random Forest, XGBoost, hồi quy logistic, mạng nơ-ron & Random Forest, Naive Bayes, hồi quy logistic & XGBoost kết hợp PCA để giảm chiều, SMOTE để cân bằng dữ liệu\\
-Độ chính xác, \% & 82 & 92.55 & -- & 95\\
-F1-score & 82.3 & 92.40 & 80 & 94.5\\
-\bottomrule
-\end{tabular}}
+\begin{table}[htbp]
+	\centering
+	\caption{So sánh hiệu năng với các nghiên cứu liên quan}
+	\label{tab:comparison}
+	\resizebox{\textwidth}{!}{ % <--- Tự động co giãn vừa khít trang giấy
+		\begin{tabular}{lp{2cm}p{2.5cm}p{2.5cm}p{3.5cm}p{4cm}}
+			\toprule
+			\textbf{Thuộc tính} & \textbf{[18]} & \textbf{[33]} & \textbf{[34]} & \textbf{Kết quả báo cáo gốc} & \textbf{Kết quả nhóm thực hiện} \\
+			\midrule
+			\textbf{Phương pháp} & Logistic Regression, Decision Tree, Random Forest, k-NN, SVM, Naive Bayes & Random Forest, XGBoost, Logistic Regression, ANN & Random Forest, Naive Bayes, Logistic Regression & XGBoost + PCA (số liệu công bố của nghiên cứu) & XGBoost + PCA (11 TP) + SMOTE (tập holdout DS1) \\
+			\midrule
+			\textbf{Accuracy} & 82\% & 92.55\% & -- & 95.32\% (CV) & 78.18\% \\
+			\midrule
+			\textbf{F1-score} & 82.3\% & 92.40\% & 80\% & -- & 25.91\% \\
+			\bottomrule
+		\end{tabular}
+	} % <--- Đóng ngoặc \resizebox
 \end{table}
 
-Đối với Dataset 2, không xác định được nghiên cứu liên quan, có thể vì tập dữ liệu này mới được công bố gần đây. Vì vậy, hiệu năng mô hình trên Dataset 2 được đánh giá thêm bằng hệ số tương quan Matthews (MCC) và hệ số Cohen's Kappa (CK). MCC là một chỉ số cân bằng để đánh giá chất lượng mô hình phân loại, đặc biệt trên dữ liệu mất cân bằng, bởi nó xét cả bốn phần tử của ma trận lỗi (TP, TN, FP, FN), với giá trị từ -1 (hoàn toàn không phù hợp) đến 1 (phân loại hoàn hảo), trong đó 0 biểu thị dự báo ngẫu nhiên. CK đo mức độ nhất quán giữa dự báo của mô hình và kết quả thực tế, cũng có khoảng giá trị từ -1 đến 1, trong đó giá trị dương biểu thị mức nhất quán vượt quá ngẫu nhiên. Ngoài ra, kiểm định chéo được thực hiện. Tóm tắt kết quả cross-validation và các chỉ số hiệu năng bổ sung cho Dataset 2 được trình bày trong Bảng~\ref{tab:cv2}.
 
-\begin{table}[H]
-\centering
-\caption{Kết quả kiểm định chéo và các chỉ số hiệu năng bổ sung}\label{tab:cv2}
-\begin{tabularx}{\textwidth}{lX}
-\toprule
-\textbf{Chỉ số đánh giá} & \textbf{Giá trị}\\
-\midrule
-Điểm cross-validation trung bình & 0.99028\\
-Điểm ở từng fold & 0.98993, 0.98829, 0.99016, 0.99209, 0.99090, 0.98983, 0.98749, 0.99075, 0.99309, 0.99022\\
-MCC & 0.9634\\
-CK & 0.9632\\
-\bottomrule
-\end{tabularx}
+\noindent Đối với Dataset 2, không xác định được nghiên cứu liên quan, có thể vì tập dữ liệu này mới được công bố gần đây. Vì vậy, hiệu năng mô hình trên Dataset 2 được đánh giá thêm bằng hệ số tương quan Matthews (MCC) và hệ số Cohen's Kappa (CK). MCC là một chỉ số cân bằng để đánh giá chất lượng mô hình phân loại, đặc biệt trên dữ liệu mất cân bằng, bởi nó xét cả bốn phần tử của ma trận lỗi (TP, TN, FP, FN), với giá trị từ -1 (hoàn toàn không phù hợp) đến 1 (phân loại hoàn hảo), trong đó 0 biểu thị dự báo ngẫu nhiên. CK đo mức độ nhất quán giữa dự báo của mô hình và kết quả thực tế, cũng có khoảng giá trị từ -1 đến 1, trong đó giá trị dương biểu thị mức nhất quán vượt quá ngẫu nhiên. Ngoài ra, kiểm định chéo được thực hiện. Tóm tắt kết quả cross-validation và các chỉ số hiệu năng bổ sung cho Dataset 2 được trình bày trong Bảng~\ref{tab:chi_so_danh_gia}.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Kết quả các chỉ số đánh giá mô hình}
+	\label{tab:chi_so_danh_gia}
+	\begin{tabular}{lc}
+		\toprule
+		\textbf{Chỉ số đánh giá} & \textbf{Giá trị} \\
+		\midrule
+		Điểm cross-validation (accuracy) trung bình & 0.9654 \\
+		Độ lệch chuẩn giữa các fold                 & 0.0010 \\
+		ROC-AUC trung bình (CV)                     & 0.9975 \\
+		MCC (trên tập kiểm tra)                     & 0.7322 \\
+		Cohen's Kappa (trên tập kiểm tra)           & 0.6993 \\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Kết quả trong Bảng~\ref{tab:cv2} cho thấy chất lượng cao của mô hình. Điểm cross-validation trung bình 0,99028 thể hiện hiệu năng ổn định trên các fold dữ liệu khác nhau. Các giá trị ở từng fold, từ 0,98829 đến 0,99209, cho thấy biến thiên nhỏ, xác nhận độ tin cậy của mô hình. Các giá trị MCC và CK cao chỉ ra mô hình xử lý tốt bài toán phân loại ngay cả khi có khả năng mất cân bằng lớp và tạo ra dự báo tốt hơn đáng kể so với dự báo ngẫu nhiên.
 
-Mặc dù mô hình đề xuất có hiệu quả cao trong dự đoán nguy cơ đột quỵ, việc triển khai trong môi trường lâm sàng gặp một số thách thức. Những thách thức này gồm tích hợp vào các hệ thống thông tin y tế hiện có với định dạng dữ liệu không đồng nhất, nhu cầu kiểm thử trên các mẫu lâm sàng thực và bảo đảm đáp ứng yêu cầu tốc độ tính toán cho các quyết định tác nghiệp. Những thách thức tương tự được xử lý trong các công trình về phương pháp lai, cụ thể là nghiên cứu sử dụng Harris Hawks Optimization và Cuckoo Search Algorithm để lựa chọn các đặc trưng quan trọng trong dữ liệu sinh học nhiều chiều [35]. Điều này cải thiện độ chính xác và ổn định của mô hình và hỗ trợ ra quyết định trong thực hành y khoa.
+\noindent Kết quả trong Bảng~\ref{tab:chi_so_danh_gia} cho thấy chất lượng khá cao và ổn định của mô hình trên Dataset 2. Điểm cross-validation (accuracy) trung bình 0.9654 với độ lệch chuẩn rất nhỏ (0.0010) giữa các fold xác nhận độ ổn định của mô hình trên các phần dữ liệu khác nhau. ROC-AUC trung bình 0.9975 cho thấy khả năng phân biệt hai lớp rất tốt. Giá trị MCC (0.7322) và Cohen's Kappa (0.6993) trên tập kiểm tra. tuy thấp hơn mức 0.96 từng được kỳ vọng ban đầu. vẫn ở mức khá cao và chỉ ra mô hình tạo ra dự báo tốt hơn đáng kể so với dự báo ngẫu nhiên. ngay cả trên dữ liệu mất cân bằng.
 
-Mặc dù phương pháp đề xuất có một số ưu điểm, nó cũng có những hạn chế. Kết hợp XGBoost với PCA để giảm chiều giúp tăng độ chính xác mô hình, nhưng cách tiếp cận này có thể khó cấu hình, gây khó khăn khi áp dụng cho các tập dữ liệu khác, đặc biệt nếu dữ liệu không có vấn đề nhiều chiều rõ rệt. Bên cạnh đó, tính toán song song qua OpenMP để tăng tốc PCA chỉ mang lại lợi ích đáng kể với các tập dữ liệu lớn, trong khi với tập dữ liệu nhỏ, mức tăng hiệu năng không tỷ lệ thuận với chi phí triển khai công nghệ.
+\noindent Mô hình đề xuất có hiệu quả cao trong dự đoán nguy cơ đột quỵ, tuy nhiên, việc triển khai trong môi trường lâm sàng cũng gặp một số thách thức. Những thách thức này gồm tích hợp vào các hệ thống thông tin y tế hiện có với định dạng dữ liệu không đồng nhất, nhu cầu kiểm thử trên các mẫu lâm sàng thực và bảo đảm đáp ứng yêu cầu tốc độ tính toán cho các quyết định tác nghiệp. Những thách thức tương tự được xử lý trong các công trình về phương pháp lai, cụ thể là nghiên cứu sử dụng Harris Hawks Optimization và Cuckoo Search Algorithm để lựa chọn các đặc trưng quan trọng trong dữ liệu sinh học nhiều chiều [35]. Điều này cải thiện độ chính xác và ổn định của mô hình và hỗ trợ ra quyết định trong thực hành y khoa.
 
-Các thuật toán metaheuristic như Genetic Algorithm, Particle Swarm Optimization và nhiều phương pháp khác đang được sử dụng tích cực để cải thiện phân tích dữ liệu y tế nhiều chiều. Nghiên cứu [36] cho thấy việc tích hợp Random Drift Optimization với XGBoost nâng độ chính xác phân loại dữ liệu ung thư lên 99,14\%, vượt các phương pháp truyền thống như SVM và Naive Bayes. Cụ thể, đối với phát hiện sớm ung thư vú, một phương pháp lai kết hợp Harris Hawk Optimization và Whale Optimization với học sâu được trình bày trong [37], đạt độ chính xác phân loại 99,0\%, cũng vượt các thuật toán tối ưu truyền thống. Các cách tiếp cận này thể hiện tiềm năng lớn trong cải thiện mô hình y tế bằng cách tăng độ chính xác, khả năng thích nghi và năng lực cung cấp điều trị cá nhân hóa. Ngoài ra, việc áp dụng các phương pháp metaheuristic để lựa chọn gene và cải thiện độ chính xác chẩn đoán trong thực hành y khoa cũng rất quan trọng, như trình bày trong [38], nơi các cách tiếp cận metaheuristic giúp cải thiện lựa chọn đặc trưng và bảo đảm độ chính xác phân loại cao, có thể đóng góp vào phát triển điều trị cá nhân hóa trong ung thư học.
+\noindent Phương pháp đề xuất cũng có một số ưu điểm và hạn chế nhận định. Kết hợp XGBoost với PCA để giảm chiều giúp tăng độ chính xác mô hình, nhưng cách tiếp cận này có thể khó cấu hình, gây khó khăn khi áp dụng cho các tập dữ liệu khác, đặc biệt nếu dữ liệu không có vấn đề nhiều chiều rõ rệt. Bên cạnh đó, tính toán song song qua OpenMP để tăng tốc PCA chỉ mang lại lợi ích đáng kể với các tập dữ liệu lớn, trong khi với tập dữ liệu nhỏ, mức tăng hiệu năng không tỷ lệ thuận với chi phí triển khai công nghệ.
+
+\noindent Các thuật toán metaheuristic như Genetic Algorithm, Particle Swarm Optimization và nhiều phương pháp khác đang được sử dụng tích cực để cải thiện phân tích dữ liệu y tế nhiều chiều. Nghiên cứu [36] cho thấy việc tích hợp Random Drift Optimization với XGBoost nâng độ chính xác phân loại dữ liệu ung thư lên 99.14\%, vượt các phương pháp truyền thống như SVM và Naive Bayes. Cụ thể, đối với phát hiện sớm ung thư vú, một phương pháp lai kết hợp Harris Hawk Optimization và Whale Optimization với học sâu được trình bày trong [37], đạt độ chính xác phân loại 99.0\%, cũng vượt các thuật toán tối ưu truyền thống. Các cách tiếp cận này thể hiện tiềm năng lớn trong cải thiện mô hình y tế bằng cách tăng độ chính xác, khả năng thích nghi và năng lực cung cấp điều trị cá nhân hóa. Ngoài ra, việc áp dụng các phương pháp metaheuristic để lựa chọn gene và cải thiện độ chính xác chẩn đoán trong thực hành y khoa cũng rất quan trọng, như trình bày trong [38], nơi các cách tiếp cận metaheuristic giúp cải thiện lựa chọn đặc trưng và bảo đảm độ chính xác phân loại cao, có thể đóng góp vào phát triển điều trị cá nhân hóa trong ung thư học.

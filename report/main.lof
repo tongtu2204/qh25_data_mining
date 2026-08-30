@@ -1,0 +1,30 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Sơ đồ luồng của phương pháp đề xuất.}}{11}{figure.caption.8}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Phương sai tích lũy theo thành phần - Dataset 1}}{15}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Tỷ lệ phương sai được giải thích bởi từng thành phần - Dataset 1}}{15}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Phương sai tích lũy theo thành phần - Dataset 2}}{15}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Tỷ lệ phương sai được giải thích bởi từng thành phần - Dataset 2}}{15}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Trọng số đặc trưng trong thành phần chính thứ nhất - Dataset 1}}{16}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Trọng số đặc trưng trong thành phần chính thứ hai - Dataset 1}}{16}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Trọng số đặc trưng trong thành phần chính thứ nhất - Dataset 2}}{16}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Trọng số đặc trưng trong thành phần chính thứ hai - Dataset 2}}{16}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình không có PCA - Dataset 1}}{18}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình có PCA - Dataset 1}}{18}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình không có PCA - Dataset 2}}{18}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình có PCA - Dataset 2}}{18}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình cuối cùng - Dataset 1}}{22}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Đường cong ROC-AUC của mô hình cuối cùng - Dataset 1}}{22}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Ma trận nhầm lẫn của mô hình cuối cùng - Dataset 2}}{23}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Đường cong ROC-AUC của mô hình cuối cùng - Dataset 2}}{23}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Waterfall (Dataset 1).}}{25}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Bar (Dataset 1).}}{25}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Beewarm (Dataset 1).}}{26}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Waterfall (Dataset 2).}}{26}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Bar (Dataset 2).}}{27}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces SHAP Beewarm (Dataset 2).}}{27}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.23}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Thời gian thực thi Jacobi theo kích thước ma trận}}{29}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.24}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Speedup của OpenMP so với phiên bản tuần tự}}{29}{figure.caption.33}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }

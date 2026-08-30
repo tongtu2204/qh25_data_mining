@@ -4,5 +4,53 @@
 \textbf{Tác giả:} Lesia Mochurad, Viktoriia Babii, Yuliia Boliubash và Yulianna Mochurad.\\[4pt]
 \textbf{Tạp chí:} BMC Medical Informatics and Decision Making (2025) 25:63.\\[4pt]
 \textbf{DOI:} \url{https://doi.org/10.1186/s12911-025-02894-z}.\\[8pt]
+\textbf{Nguồn dữ liệu:}
+\begin{itemize}
+	\item \url{https://www.kaggle.com/fedesoriano/stroke-prediction-dataset}
+	\item \url{https://www.kaggle.com/datasets/pranavp1999/stroke-prediction-health-care-synthetic-dataset}
+\end{itemize}
 
-Tài liệu này trình bày bản tiếng Việt của toàn bộ nội dung bài báo theo cấu trúc báo cáo A4. Các công thức, bảng, số liệu, thứ tự nội dung, trích dẫn và tài liệu tham khảo được giữ theo bài báo gốc; bố cục trình bày được chuyển sang mẫu báo cáo/luận án một cột.
+
+
+\chapter*{GIỚI THIỆU BÁO CÁO}
+\addcontentsline{toc}{chapter}{GIỚI THIỆU BÁO CÁO}
+Báo cáo này được thực hiện trong khuôn khổ học phần Khai phá dữ liệu, với
+mục tiêu tìm hiểu và trình bày lại một công trình nghiên cứu ứng dụng học máy
+trong lĩnh vực y tế --- cụ thể là bài toán dự đoán nguy cơ đột quỵ.
+
+\medskip
+
+\noindent
+\textbf{Lý do lựa chọn bài báo:} đây là một nghiên cứu tích hợp đồng thời ba
+kỹ thuật đã được giới thiệu trong học phần: (1) thuật toán học máy có giám sát mạnh
+(XGBoost), (2) kỹ thuật giảm chiều dữ liệu (PCA), và (3) trí tuệ nhân tạo giải
+thích được (XAI, cụ thể là SHAP). Việc bài báo kết hợp cả ba khía cạnh này
+trong một quy trình xử lý dữ liệu y tế thực tế giúp minh họa rõ mối liên hệ
+giữa lý thuyết khai phá dữ liệu và một ứng dụng có ý nghĩa thực tiễn cao.
+
+\medskip
+
+\noindent
+\textbf{Mục tiêu của báo cáo:}
+
+\begin{itemize}
+	\item Trình bày lại có hệ thống nội dung bài báo gốc bằng tiếng Việt,
+	bám sát cấu trúc: bối cảnh -- phương pháp -- kết quả -- thảo luận --
+	kết luận.
+	
+	\item Diễn giải các công thức và thuật toán then chốt (PCA bằng phép quay
+	Jacobi song song hóa OpenMP, hàm mục tiêu XGBoost, phương pháp SHAP) theo
+	cách dễ tiếp cận.
+	
+	\item Liên hệ nội dung bài báo với các khái niệm đã học trong học phần
+	(tiền xử lý dữ liệu, giảm chiều, cân bằng lớp, đánh giá mô hình, khả năng
+	diễn giải mô hình).
+	
+	\item Đưa ra nhận xét, đánh giá về phương pháp, điểm mạnh, hạn chế
+	và khả năng áp dụng của nghiên cứu.
+\end{itemize}
+
+\noindent
+\textbf{Phạm vi báo cáo:} báo cáo trình bày lại nội dung học thuật chính
+của bài báo gốc, thực nghiệm để kiểm chứng kết quả thực tế; từ đó rút ra nhận xét,
+đánh giá của cá nhân. Các số liệu, bảng biểu, hình vẽ là kết quả từ việc chạy thực nghiệm của nhóm khi thực hiện đề tài.
