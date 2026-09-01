@@ -1,0 +1,65 @@
+\chapter{ĐỀ XUẤT CẢI TIẾN VÀ ĐỐI CHIẾU KẾT QUẢ}
+
+Chương này chuyển từ việc trình bày lại bài báo sang phần thực nghiệm độc lập của nhóm. Mục tiêu là tái hiện pipeline chính của tác giả trên hai bộ dữ liệu, đối chiếu định lượng với các kết quả được công bố, xác định những điểm chưa tái lập được và đề xuất các hướng cải tiến có cơ sở thực nghiệm.
+
+\section{Kết quả tái hiện so với bài báo gốc}
+
+Kết quả tái hiện cuối cùng của nhóm được tổng hợp trong Bảng~\ref{tab:reproduction_comparison}. Để bảo đảm so sánh có ý nghĩa, trước hết sử dụng các chỉ số mà bài báo công bố ở mức kiểm định chéo. Dataset 1 sử dụng SMOTE và giữ lại 11 thành phần PCA, giải thích khoảng 96.50\% phương sai; Dataset 2 sử dụng Random UnderSampler và cũng giữ 11 thành phần, giải thích khoảng 95.86\% phương sai.
+
+\begin{table}[H]
+\centering
+\caption{So sánh kết quả kiểm định chéo giữa bài báo và thực nghiệm tái hiện của nhóm}
+\label{tab:reproduction_comparison}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Chỉ số} & \textbf{Bài báo} & \textbf{Tái hiện} & \textbf{Chênh lệch}\\
+\midrule
+Dataset 1 -- CV Accuracy & 0.9532 & 0.7652 & -0.1880\\
+Dataset 2 -- CV Accuracy & 0.9903 & 0.9654 & -0.0249\\
+Dataset 2 -- MCC & 0.9634 & 0.7322 & -0.2312\\
+Dataset 2 -- Cohen's Kappa & 0.9632 & 0.6993 & -0.2639\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Kết quả cho thấy thực nghiệm của nhóm \textbf{chưa tái lập được mức hiệu năng được công bố trong bài báo}. Chênh lệch lớn nhất xuất hiện ở Dataset 1: accuracy trung bình của kiểm định chéo giảm từ 0.9532 xuống 0.7652. Với Dataset 2, chênh lệch nhỏ hơn về accuracy nhưng MCC và Cohen's Kappa vẫn thấp hơn đáng kể. Vì vậy, không nên sử dụng các kết quả 95\%--98\% của bài báo như kết quả thực nghiệm của nhóm.
+
+\section{Kết quả trên tập kiểm tra của nhóm}
+
+Ngoài các chỉ số kiểm định chéo, pipeline tái hiện được đánh giá trên tập kiểm tra giữ nguyên phân bố mất cân bằng. Dataset 1 đạt accuracy 0.7818, precision 0.1554, recall 0.7800, F1-score 0.2591 và ROC-AUC 0.8118. Dataset 2 đạt accuracy 0.9664, precision 0.5590, recall 0.9944, F1-score 0.7157 và ROC-AUC 0.9976. Các kết quả này cho thấy accuracy cao không đồng nghĩa với khả năng dự báo lớp đột quỵ tốt, đặc biệt trên Dataset 1; precision và F1-score cần được xem xét đồng thời.
+
+\section{Đối chiếu hiệu năng PCA và tính toán OpenMP}
+
+Một phần đóng góp quan trọng của bài báo là tối ưu hóa phép quay Jacobi bằng OpenMP. Thực nghiệm của nhóm cho thấy hiệu quả song song hóa phụ thuộc mạnh vào kích thước ma trận. Với $N=100$ và $N=200$, OpenMP chưa đem lại lợi ích về thời gian; speedup lần lượt chỉ đạt 0.604 và 0.923. Khi kích thước tăng lên, lợi ích bắt đầu rõ ràng hơn: speedup đạt 1.084 tại $N=300$, 1.251 tại $N=400$ và 1.539 tại $N=500$.
+
+Như vậy, nhóm xác nhận được \textbf{xu hướng} mà bài báo đề cập: song song hóa có lợi hơn khi khối lượng tính toán tăng. Tuy nhiên, trong môi trường tái hiện hiện tại, mức speedup cực đại khoảng 1.54 lần thấp hơn tuyên bố tăng khoảng ba lần của bài báo. Đây là một khác biệt quan trọng cần được báo cáo thay vì điều chỉnh số liệu để phù hợp với kết quả công bố.
+
+\section{Các điểm cải tiến đề xuất}
+
+\subsection{Đánh giá bằng các chỉ số phù hợp với mất cân bằng lớp}
+
+Dataset 1 có tỷ lệ lớp dương rất thấp. Do đó, Accuracy hoặc ROC-AUC đơn thuần có thể che khuất khả năng nhận diện lớp thiểu số. Nhóm đề xuất đưa PR-AUC, Precision, Recall, F1-score, MCC và ma trận nhầm lẫn vào bộ chỉ số chính. Đặc biệt, MCC phù hợp để đánh giá cân bằng giữa bốn thành phần của ma trận nhầm lẫn.
+
+\subsection{Điều chỉnh ngưỡng phân loại}
+
+Thay vì cố định threshold ở 0.5, có thể lựa chọn ngưỡng theo mục tiêu cụ thể, chẳng hạn tối đa hóa F1, tối ưu Youden's J hoặc ưu tiên Recall khi chi phí bỏ sót một ca có nguy cơ cao lớn hơn chi phí cảnh báo giả. Cách tiếp cận này phù hợp hơn với bối cảnh sàng lọc y tế.
+
+\subsection{Đánh giá lại vai trò của PCA}
+
+Kết quả tái hiện cho thấy PCA không nên được giả định là luôn cải thiện mô hình. Có thể khảo sát số thành phần theo nhiều mức phương sai giải thích (ví dụ 90\%, 95\%, 99\%), so sánh trực tiếp với pipeline không PCA và thử lựa chọn đặc trưng dựa trên XGBoost. Việc lựa chọn số thành phần cũng cần được thực hiện bên trong quy trình cross-validation để tránh rò rỉ thông tin.
+
+\subsection{Cải thiện xử lý mất cân bằng}
+
+Có thể mở rộng từ SMOTE và random undersampling sang SMOTE-Tomek, ADASYN, cost-sensitive learning hoặc scale\_pos\_weight của XGBoost. Với Dataset 2, thay vì chỉ thực hiện một lần undersampling, có thể xây dựng nhiều mẫu con lớp đa số và kết hợp các mô hình con để giảm sự phụ thuộc vào một lần lấy mẫu ngẫu nhiên.
+
+\section{Những điểm thực nghiệm của nhóm tốt hơn hoặc có giá trị bổ sung}
+
+Không phải mọi kết quả tái hiện đều tốt hơn kết quả được công bố. Về hiệu năng dự báo tổng thể, các chỉ số CV Accuracy, MCC và Cohen's Kappa hiện đều thấp hơn số liệu của bài báo. Vì vậy, nhóm không kết luận rằng mô hình tái hiện tốt hơn tác giả về mặt accuracy.
+
+Tuy nhiên, thực nghiệm của nhóm cung cấp một số kết quả bổ sung có giá trị. Thứ nhất, nhóm đánh giá đầy đủ hơn sự khác biệt giữa CV và tập kiểm tra, đồng thời đưa Precision, Recall, F1-score, ROC-AUC và MCC vào phân tích. Thứ hai, benchmark OpenMP trên nhiều kích thước ma trận cho thấy rõ ngưỡng mà song song hóa bắt đầu có lợi, thay vì chỉ báo cáo một hệ số speedup tổng quát. Thứ ba, việc tái hiện độc lập làm lộ rõ mức độ nhạy của kết quả đối với pipeline dữ liệu, cách cân bằng lớp, cấu hình PCA và môi trường tính toán.
+
+Do bài báo đã bị rút lại do các quan ngại liên quan đến nguồn gốc và độ tin cậy của dữ liệu, các kết quả được công bố trong bài càng cần được xem xét thận trọng. Vì vậy, đóng góp của phần thực nghiệm trong báo cáo này không phải là chứng minh một kết quả cao hơn bằng mọi giá, mà là kiểm tra khả năng tái lập, chỉ ra các sai khác có thể đo được và xây dựng một quy trình đánh giá minh bạch hơn.
+
+\section{Định hướng thực nghiệm tiếp theo}
+
+Các thí nghiệm tiếp theo nên tập trung vào ba hướng. Thứ nhất là kiểm tra độ ổn định của kết quả qua nhiều seed và nhiều lần chia dữ liệu. Thứ hai là tối ưu threshold và các phương pháp cost-sensitive learning trên Dataset 1. Thứ ba là thực hiện ablation study có kiểm soát giữa các pipeline: XGBoost gốc, XGBoost + PCA, XGBoost + balancing và XGBoost + PCA + balancing, trong cùng một giao thức cross-validation. Khi đó có thể xác định riêng đóng góp của từng thành phần thay vì chỉ so sánh mô hình cuối cùng.
