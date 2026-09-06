@@ -17,6 +17,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs,longtable,array,tabularx,multirow}
 \usepackage{float}
+\usepackage{placeins}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{caption}
@@ -30,14 +31,25 @@
 \usepackage{siunitx}
 
 % ==================== Khổ trang / typography ====================
+% Giữ template chính của nhánh linh: Times New Roman 13pt, lề trái 3.5cm,
+% phải 2cm, trên/dưới 2cm, giãn dòng 1.30.
 \usepackage[left=3.5cm,right=2cm,top=2.0cm,bottom=2.0cm]{geometry}
 \setlength{\parindent}{1.2cm}
 \setlength{\parskip}{0pt}
 \linespread{1.30}\selectfont
 \setlist[itemize]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
 \setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
-\captionsetup{font=normalsize,labelfont=bf,labelsep=period,justification=centering}
+\captionsetup{font=normalsize,labelfont=bf,labelsep=period,justification=centering,singlelinecheck=true,skip=6pt}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!55!black}
+
+% Giảm khoảng trắng và cho phép LaTeX đặt hình linh hoạt gần vị trí được tham chiếu.
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.80}
 
 % ==================== Định dạng chương/mục ====================
 \titleformat{\chapter}[display]
@@ -79,17 +91,19 @@
 \newcommand{\ReportYear}{09/2026}
 \newcommand{\ReportTitle}{CẢI THIỆN DỰ ĐOÁN NGUY CƠ ĐỘT QUỴ BẰNG CÁCH TÍCH HỢP XGBOOST, PHÂN TÍCH THÀNH PHẦN CHÍNH TỐI ƯU VÀ TRÍ TUỆ NHÂN TẠO GIẢI THÍCH ĐƯỢC}
 
-% Hình được giới hạn cả chiều rộng và chiều cao để tránh tràn trang.
+% Hình mặc định được căn giữa, giới hạn cả chiều rộng và chiều cao.
+% [htbp] tránh khoảng trắng lớn do ép mọi hình đứng đúng vị trí bằng [H].
 \newcommand{\paperfig}[3][0.82\linewidth]{%
-  \begin{figure}[H]
+  \begin{figure}[htbp]
     \centering
-    \includegraphics[width=#1,height=0.64\textheight,keepaspectratio]{#2}
+    \includegraphics[width=#1,height=0.62\textheight,keepaspectratio]{#2}
     \caption{#3}
   \end{figure}}
 
 \begin{document}
 
 % ==================== BÌA ====================
+% Bố cục kế thừa từ nhánh linh; chỉ giữ một trang bìa đang sử dụng.
 \begin{titlepage}
 \thispagestyle{empty}
 \thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
@@ -116,6 +130,8 @@
 \end{titlepage}
 
 % ==================== PHẦN ĐẦU ====================
+% Thứ tự front matter giữ theo nhánh linh: thông tin bài báo -> tóm tắt ->
+% mục lục -> viết tắt -> danh mục hình -> danh mục bảng.
 \frontmatter
 \pagenumbering{roman}
 \setcounter{page}{1}
@@ -145,16 +161,22 @@
 \fontsize{13}{20}\selectfont
 
 \input{Chuong1_Boicanh.tex}
+\FloatBarrier
 \clearpage
 \input{Chuong2_Phuongphap.tex}
+\FloatBarrier
 \clearpage
 \input{Chuong3_Ketqua.tex}
+\FloatBarrier
 \clearpage
 \input{Chuong4_Thaoluan.tex}
+\FloatBarrier
 \clearpage
 \input{De_xuat.tex}
+\FloatBarrier
 \clearpage
 \input{Ketluan.tex}
+\FloatBarrier
 \clearpage
 
 % ==================== TÀI LIỆU THAM KHẢO ====================
