@@ -1,0 +1,82 @@
+[
+  {
+    "protocol": "resample_then_split_inferred",
+    "pca": false,
+    "best_cv_auc": 0.9908737648382556,
+    "params": {
+      "model__subsample": 1.0,
+      "model__reg_lambda": 5.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 400,
+      "model__min_child_weight": 1,
+      "model__max_depth": 8,
+      "model__learning_rate": 0.05,
+      "model__colsample_bytree": 1.0
+    },
+    "thresholds": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "oof_specificity_0.80",
+        "threshold": 0.12511034309864044,
+        "oof_recall": 0.9899768696993061,
+        "oof_specificity": 0.801080802882141
+      },
+      {
+        "policy": "oof_specificity_0.85",
+        "threshold": 0.19885951280593872,
+        "oof_recall": 0.9845797995373939,
+        "oof_specificity": 0.8540916109109624
+      },
+      {
+        "policy": "oof_specificity_0.90",
+        "threshold": 0.3112598657608032,
+        "oof_recall": 0.9753276792598303,
+        "oof_specificity": 0.9019557385486361
+      }
+    ],
+    "seconds": 17.375961064999956
+  },
+  {
+    "protocol": "resample_then_split_inferred",
+    "pca": true,
+    "best_cv_auc": 0.976305730777589,
+    "params": {
+      "model__subsample": 0.8,
+      "model__reg_lambda": 5.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 400,
+      "model__min_child_weight": 3,
+      "model__max_depth": 8,
+      "model__learning_rate": 0.1,
+      "model__colsample_bytree": 1.0
+    },
+    "thresholds": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "oof_specificity_0.80",
+        "threshold": 0.2005043476819992,
+        "oof_recall": 0.9943459264970445,
+        "oof_specificity": 0.8090581574884199
+      },
+      {
+        "policy": "oof_specificity_0.85",
+        "threshold": 0.3466130495071411,
+        "oof_recall": 0.9876638396299152,
+        "oof_specificity": 0.8502316006176016
+      },
+      {
+        "policy": "oof_specificity_0.90",
+        "threshold": 0.5569351315498352,
+        "oof_recall": 0.9665895656643536,
+        "oof_specificity": 0.9004117344312919
+      }
+    ],
+    "seconds": 14.519881209000005
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "seed_split": 42,
+  "seed_search": 2026,
+  "trials_per_arm_pca": 24,
+  "cv_folds": 3,
+  "selection_metric": "roc_auc",
+  "threshold_selection": "Training OOF only, maximize recall subject to OOF specificity target; target not guaranteed on test",
+  "caveats": [
+    "Prior test already observed; exploratory comparison, not fresh external validation",
+    "OOF uses hyperparameters selected on same training CV, not nested CV; OOF optimism possible",
+    "Inferred paper arm has full-data preprocessing and pre-split SMOTE; not unbiased validation",
+    "No SMOTENC, class weights, IQR alternatives or PCA 99% in this first tuning stage"
+  ],
+  "versions": {
+    "python": "3.12.13",
+    "sklearn": "1.8.0",
+    "xgboost": "3.4.1",
+    "imblearn": "0.14.2"
+  }
+}
