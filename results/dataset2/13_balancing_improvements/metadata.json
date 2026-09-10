@@ -1,0 +1,46 @@
+{
+  "run_status": "completed",
+  "dataset": "dataset2",
+  "raw_rows": 5769190,
+  "cleaned_rows": 5542261,
+  "train_rows": 4433808,
+  "test_rows": 1108453,
+  "train_positive": 188769,
+  "test_positive": 47192,
+  "input_sha256": "ce40f349a907ec7a915fb3d7eff05af6bfd5c274a639aaad3a4d115e406909e8",
+  "input_size_bytes": 331279692,
+  "input_source": "Kaggle dataset download: pranavp1999/stroke-prediction-health-care-synthetic-dataset (healthcare_data_2GB.csv.zip)",
+  "input_size_bytes": 331279692,
+  "seed_split": 42,
+  "seed_cv_search": 2026,
+  "trials_per_variant": 6,
+  "cv_folds": 3,
+  "search_rows": 150000,
+  "selection_metric": "standardized partial ROC-AUC at max FPR=0.10",
+  "threshold_source": "heldout 20% of outer training; excluded from tuning",
+  "specificity_targets": [
+    0.85,
+    0.9,
+    0.95
+  ],
+  "caveats": [
+    "Same previously observed test split; exploratory comparison, not external validation",
+    "D1 OOF after selection is not nested and may be optimistic",
+    "Specificity targets apply to threshold-selection data, not guaranteed on test",
+    "D2 thresholds transferred from a model fit on inner train to full-train refit",
+    "D2 binary threshold 0.5 and basic cleaning retained from repo for comparability"
+  ],
+  "missing_binary": {
+    "stroke": 0,
+    "hypertension": 0,
+    "heart_disease": 0
+  },
+  "versions": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "sklearn": "1.8.0",
+    "xgboost": "3.4.1",
+    "imblearn": "0.14.2"
+  },
+  "test_result_rows": 16
+}

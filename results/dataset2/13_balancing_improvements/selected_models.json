@@ -1,0 +1,164 @@
+[
+  {
+    "name": "undersampling_pca_0",
+    "method": "undersampling",
+    "pca": false,
+    "cv_partial_auc_90": 0.9182356537136722,
+    "params": {
+      "sampler__sampling_strategy": 0.25,
+      "preprocess__clip_iqr": false,
+      "model__subsample": 1.0,
+      "model__reg_lambda": 10.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 600,
+      "model__min_child_weight": 5,
+      "model__max_depth": 5,
+      "model__learning_rate": 0.1,
+      "model__colsample_bytree": 1.0
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.0915156751871109
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.1567862331867218
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.2871841490268707
+      }
+    ],
+    "seconds": 127.81203883300009,
+    "final_train_rows": 4433808,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": false
+  },
+  {
+    "name": "undersampling_pca_1",
+    "method": "undersampling",
+    "pca": true,
+    "cv_partial_auc_90": 0.9738931635346129,
+    "params": {
+      "sampler__sampling_strategy": 0.5,
+      "preprocess__clip_iqr": false,
+      "pca__n_components": 0.95,
+      "model__subsample": 1.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 600,
+      "model__min_child_weight": 5,
+      "model__max_depth": 5,
+      "model__learning_rate": 0.1,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.046172019094228745
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.09430500119924545
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.1926666647195816
+      }
+    ],
+    "seconds": 59.11675384099999,
+    "final_train_rows": 4433808,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": false
+  },
+  {
+    "name": "weighted_pca_0",
+    "method": "weighted",
+    "pca": false,
+    "cv_partial_auc_90": 0.9621795269905157,
+    "params": {
+      "preprocess__clip_iqr": true,
+      "model__subsample": 1.0,
+      "model__scale_pos_weight": 10.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 5,
+      "model__max_depth": 7,
+      "model__learning_rate": 0.1,
+      "model__colsample_bytree": 1.0
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.10118454694747925
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.17550545930862427
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.35106033086776733
+      }
+    ],
+    "seconds": 290.65044789599995,
+    "final_train_rows": 4433808,
+    "uses_no_resampling": true,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "weighted_pca_1",
+    "method": "weighted",
+    "pca": true,
+    "cv_partial_auc_90": 0.968738774700243,
+    "params": {
+      "preprocess__clip_iqr": false,
+      "pca__n_components": 0.99,
+      "model__subsample": 1.0,
+      "model__scale_pos_weight": 20.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 400,
+      "model__min_child_weight": 1,
+      "model__max_depth": 7,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.2645319104194641
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.3789346516132355
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.5602803230285645
+      }
+    ],
+    "seconds": 291.40600537800003,
+    "final_train_rows": 4433808,
+    "uses_no_resampling": true,
+    "retains_all_original_training_rows": true
+  }
+]

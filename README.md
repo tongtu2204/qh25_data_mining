@@ -993,3 +993,20 @@ Mochurad, L. et al. (2025).
 **Improving stroke risk prediction by integrating XGBoost, optimized principal component analysis, and explainable artificial intelligence.**
 
 BMC Medical Informatics and Decision Making, 25:63.
+
+## Experiment 13 — Cải tiến cân bằng lớp và ngưỡng dự đoán
+
+- Code: `experiments/13_balancing_improvements.py`; logic dùng chung: `src/improvements.py`.
+- D1: SMOTE / SMOTENC / giữ toàn bộ train với trọng số lớp, mỗi phương pháp có và không PCA.
+- D2: undersampling / giữ toàn bộ train với trọng số lớp, mỗi phương pháp có và không PCA.
+- Chỉ fit preprocessing và resampling trong train/fold. Tuning dùng partial ROC-AUC tại FPR tối đa 10%; ngưỡng chọn bằng validation/OOF để tối đa Recall tại mục tiêu Specificity 85%, 90%, 95%.
+- D1 dùng 12 ứng viên × 3 folds cho mỗi biến thể; run D2 hoàn tất dùng 6 ứng viên × 3 folds do kích thước dữ liệu lớn. Khảo sát IQR bật/tắt, PCA 95%/99%/13 thành phần và tỷ lệ cân bằng/trọng số.
+- Kết quả: `results/<dataset>/13_balancing_improvements/`; model và dự đoán từng dòng nằm trong `local/` được ignore.
+- Chạy riêng; không tự nối vào `run_all.py` của pipeline tái lập 01–10.
+
+```powershell
+python -m experiments.13_balancing_improvements --dataset dataset1 --data "C:/path/healthcare-dataset-stroke-data.csv"
+python -m experiments.13_balancing_improvements --dataset dataset2 --data "C:/path/healthcare_data_2GB.csv.zip" --tuning-rows 150000
+```
+
+D2 tuning trên tối đa 150.000 dòng từ phần train nội bộ; ngưỡng chọn trên validation riêng. Cấu hình trọng số cuối cùng được fit trên **toàn bộ outer train**, không undersampling. D1 dùng OOF trên train, chưa phải nested CV. Các mức Specificity là mục tiêu trên validation và có thể lệch trên test. Đây là mở rộng thực nghiệm trên split đã từng được xem; không thay thế external validation.

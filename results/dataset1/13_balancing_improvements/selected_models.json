@@ -1,0 +1,249 @@
+[
+  {
+    "name": "smote_pca_0",
+    "method": "smote",
+    "pca": false,
+    "cv_partial_auc_90": 0.5779702617265347,
+    "params": {
+      "sampler__sampling_strategy": 0.5,
+      "sampler__k_neighbors": 3,
+      "preprocess__clip_iqr": false,
+      "model__subsample": 1.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 1,
+      "model__max_depth": 2,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.4720560610294342
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.5186284184455872
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.5831010341644287
+      }
+    ],
+    "seconds": 6.504185912000139,
+    "final_train_rows": 4088,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "smote_pca_1",
+    "method": "smote",
+    "pca": true,
+    "cv_partial_auc_90": 0.578433386196069,
+    "params": {
+      "sampler__sampling_strategy": 0.5,
+      "sampler__k_neighbors": 5,
+      "preprocess__clip_iqr": true,
+      "pca__n_components": 0.95,
+      "model__subsample": 1.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 400,
+      "model__min_child_weight": 1,
+      "model__max_depth": 2,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 1.0
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.47884172201156616
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.5530359148979187
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.6510640978813171
+      }
+    ],
+    "seconds": 4.020534546000363,
+    "final_train_rows": 4088,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "smotenc_pca_0",
+    "method": "smotenc",
+    "pca": false,
+    "cv_partial_auc_90": 0.578536233153646,
+    "params": {
+      "sampler__sampling_strategy": 0.25,
+      "sampler__k_neighbors": 3,
+      "preprocess__clip_iqr": false,
+      "model__subsample": 0.8,
+      "model__reg_lambda": 5.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 5,
+      "model__max_depth": 3,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.34522515535354614
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.41221368312835693
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.4945312440395355
+      }
+    ],
+    "seconds": 3.9538682100001097,
+    "final_train_rows": 4088,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "smotenc_pca_1",
+    "method": "smotenc",
+    "pca": true,
+    "cv_partial_auc_90": 0.57964133276751,
+    "params": {
+      "sampler__sampling_strategy": 0.25,
+      "sampler__k_neighbors": 3,
+      "preprocess__clip_iqr": false,
+      "pca__n_components": 13,
+      "model__subsample": 0.8,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 5,
+      "model__max_depth": 2,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.33264219760894775
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.3835603594779968
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.4692061245441437
+      }
+    ],
+    "seconds": 5.604553970999859,
+    "final_train_rows": 4088,
+    "uses_no_resampling": false,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "weighted_pca_0",
+    "method": "weighted",
+    "pca": false,
+    "cv_partial_auc_90": 0.6066872812310795,
+    "params": {
+      "preprocess__clip_iqr": false,
+      "model__subsample": 0.8,
+      "model__scale_pos_weight": 1.0,
+      "model__reg_lambda": 1.0,
+      "model__reg_alpha": 0.0,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 1,
+      "model__max_depth": 2,
+      "model__learning_rate": 0.1,
+      "model__colsample_bytree": 0.8
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.09848523885011673
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.13047552108764648
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.19019246101379395
+      }
+    ],
+    "seconds": 2.362073168999814,
+    "final_train_rows": 4088,
+    "uses_no_resampling": true,
+    "retains_all_original_training_rows": true
+  },
+  {
+    "name": "weighted_pca_1",
+    "method": "weighted",
+    "pca": true,
+    "cv_partial_auc_90": 0.5905180168390473,
+    "params": {
+      "preprocess__clip_iqr": true,
+      "pca__n_components": 0.95,
+      "model__subsample": 0.8,
+      "model__scale_pos_weight": 20.0,
+      "model__reg_lambda": 10.0,
+      "model__reg_alpha": 0.5,
+      "model__n_estimators": 200,
+      "model__min_child_weight": 5,
+      "model__max_depth": 2,
+      "model__learning_rate": 0.03,
+      "model__colsample_bytree": 1.0
+    },
+    "policies": [
+      {
+        "policy": "default_0.5",
+        "threshold": 0.5
+      },
+      {
+        "policy": "specificity_0.85",
+        "threshold": 0.6703715324401855
+      },
+      {
+        "policy": "specificity_0.90",
+        "threshold": 0.734390139579773
+      },
+      {
+        "policy": "specificity_0.95",
+        "threshold": 0.7859406471252441
+      }
+    ],
+    "seconds": 3.650097573000039,
+    "final_train_rows": 4088,
+    "uses_no_resampling": true,
+    "retains_all_original_training_rows": true
+  }
+]

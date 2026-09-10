@@ -1,0 +1,20 @@
+{
+  "specificity_0.85": {
+    "name": "weighted_pca_1",
+    "threshold": 0.6703715324401855,
+    "validation_recall": 0.5577889447236181,
+    "validation_specificity": 0.8500899974286449
+  },
+  "specificity_0.90": {
+    "name": "weighted_pca_0",
+    "threshold": 0.13047552108764648,
+    "validation_recall": 0.40703517587939697,
+    "validation_specificity": 0.9030599125739265
+  },
+  "specificity_0.95": {
+    "name": "weighted_pca_0",
+    "threshold": 0.19019246101379395,
+    "validation_recall": 0.271356783919598,
+    "validation_specificity": 0.9529442015942402
+  }
+}

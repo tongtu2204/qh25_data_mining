@@ -1,0 +1,20 @@
+{
+  "specificity_0.85": {
+    "name": "undersampling_pca_1",
+    "threshold": 0.046172019094228745,
+    "validation_recall": 0.9998410764422313,
+    "validation_specificity": 0.8565985243955299
+  },
+  "specificity_0.90": {
+    "name": "undersampling_pca_1",
+    "threshold": 0.09430500119924545,
+    "validation_recall": 0.9996026911055782,
+    "validation_specificity": 0.9085450313777962
+  },
+  "specificity_0.95": {
+    "name": "undersampling_pca_1",
+    "threshold": 0.1926666647195816,
+    "validation_recall": 0.998437251681941,
+    "validation_specificity": 0.951171249269736
+  }
+}

@@ -45,3 +45,5 @@ results/**/*.joblib
 *.xdv
 
 cpp/build/
+# Experiment 13 local fitted models and row-level predictions
+results/**/13_balancing_improvements/local/
