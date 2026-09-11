@@ -137,6 +137,33 @@ Weighted avg & 0,9451 & 0,7818 & 0,8421 & 1.022\\
 
 So với baseline không balancing, Recall của lớp stroke tăng từ 0,0600 lên 0,7800. Tuy nhiên Precision chỉ đạt 0,1554 do số false positive lớn. Điều này phản ánh bản chất của bài toán mất cân bằng: tăng khả năng bắt ca stroke thường làm giảm độ chính xác trong các cảnh báo dương tính.
 
+\subsubsection{Đối chiếu với [21] và hai cấu hình trong Table 5}
+
+Để làm rõ ý nghĩa của kết quả tái hiện, Bảng~\ref{tab:d1_table5_benchmark} đặt kết quả [21], hai cấu hình (a), (b) của tác giả, pipeline tái hiện và phương án cải tiến của nhóm cạnh nhau. Cột support được giữ trong bảng vì đây là thông tin quyết định việc các metric có thể được so sánh trực tiếp hay chỉ mang tính tham khảo.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Dataset 1: đối chiếu Table 5 với kết quả tái hiện và cải tiến của nhóm}
+\label{tab:d1_table5_benchmark}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrp{4.8cm}}
+\toprule
+\textbf{Phương án} & \textbf{Accuracy} & \textbf{Precision (1)} & \textbf{Recall (1)} & \textbf{F1 (1)} & \textbf{Support} & \textbf{Diễn giải}\\
+\midrule
+[21] & 0,85 & 0,21 & 0,52 & 0,29 & 960/62 & Mốc tham chiếu trên test mất cân bằng, tổng 1.022 mẫu\\
+Tác giả (a) & 0,92 & 0,24 & 0,15 & 0,18 & 960/62 & Accuracy/Precision cao hơn [21] nhưng Recall và F1 giảm mạnh\\
+Tác giả (b) & 0,95 & 0,93 & 0,96 & 0,95 & 976/968 & Support đổi sang gần 50:50; không so trực tiếp với các cột test mất cân bằng\\
+Nhóm -- tái hiện & 0,7818 & 0,1554 & \textbf{0,7800} & 0,2591 & 972/50 & Recall cao hơn [21] và (a), đổi lại Accuracy/Precision thấp hơn\\
+Nhóm -- cải tiến & 0,8434 & 0,1944 & \textbf{0,7000} & \textbf{0,3043} & 972/50 & F1 cao hơn [21] và (a), Recall cao hơn rõ rệt; Accuracy gần [21]\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+So với [21], pipeline tái hiện của nhóm chưa cao hơn ở mọi chỉ số: Accuracy giảm từ 0,85 xuống 0,7818, Precision giảm từ 0,21 xuống 0,1554 và F1 giảm nhẹ từ 0,29 xuống 0,2591; ngược lại Recall tăng đáng kể từ 0,52 lên 0,78. Khi chuyển sang phương án cải tiến, F1 đạt 0,3043, cao hơn mức 0,29 của [21], đồng thời Recall vẫn đạt 0,70, cao hơn 0,52. Accuracy 0,8434 gần mức 0,85 của [21] và Precision 0,1944 thấp hơn nhẹ mức 0,21. Vì vậy, kết quả cải tiến có thể được diễn giải là \textbf{cân bằng phát hiện lớp stroke tốt hơn [21] về Recall và F1, với một đánh đổi nhỏ ở Accuracy và Precision}; tuy nhiên đây vẫn là đối chiếu tham khảo vì exact test samples không hoàn toàn giống nhau.
+
+So với cột (a) của tác giả, sự đánh đổi còn rõ hơn: cột (a) đạt Accuracy 0,92 và Precision 0,24 nhưng Recall chỉ 0,15 và F1 0,18. Phương án cải tiến của nhóm giảm Accuracy/Precision nhưng tăng Recall lên 0,70 và F1 lên 0,3043. Cột (b) không được dùng để kết luận hơn/kém trực tiếp vì support đã thay đổi từ 1.022 mẫu mất cân bằng sang 1.944 mẫu gần cân bằng.
+
 \subsection{Dataset 2}
 
 Pipeline tái hiện cuối cùng của nhóm trên Dataset 2 sử dụng random undersampling, PCA và tuning. Confusion matrix tương ứng là: TN = 1.024.239, FP = 37.022, FN = 263, TP = 46.929.
@@ -291,34 +318,37 @@ Weighted & Có & 0,9421 & 0,4233 & 0,9932 & 0,5936 & 0,9956 & 0,6282\\
 
 Việc hạ threshold có thể đưa Recall lên rất cao nhưng phải trả giá bằng số false positive. Chẳng hạn với Undersampling + PCA tại mức Specificity mục tiêu 85\%, Recall đạt 1,0000 nhưng Precision chỉ 0,2346 và tạo 153.928 false positive. Do đó Recall 100\% chỉ là một điểm vận hành, không phải bằng chứng dự đoán hoàn hảo.
 
-\section{Tổng hợp: tác giả, tái hiện và cải tiến}
+\section{Tổng hợp: tái hiện và cải tiến trên cùng test set}
 
-Để tránh trộn hai câu hỏi nghiên cứu, Bảng~\ref{tab:final_summary} được đọc theo hai chiều. Cột tác giả cho biết mức tham chiếu mà paper công bố; cột tái hiện và cải tiến của nhóm được tính trên cùng test giữ nguyên phân bố, nên hai cột này mới tạo thành phép so sánh trực tiếp cho kết luận về cải tiến.
+Bảng~\ref{tab:final_summary} chỉ tổng hợp các kết quả do nhóm thực nghiệm trên \textbf{cùng test split giữ nguyên phân bố lớp}. Kết quả công bố của tác giả không được đưa vào bảng này vì support và giao thức đánh giá không tương đương. Nhờ đó, mọi kết luận tăng/giảm dưới đây đều là so sánh trực tiếp và có cùng mẫu đánh giá.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Tổng hợp kết quả tác giả, baseline tái hiện và phương án mở rộng của nhóm}
+\caption{Tổng hợp baseline tái hiện và phương án cải tiến của nhóm trên cùng test set}
 \label{tab:final_summary}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{llrrrp{5.0cm}}
+\begin{tabular}{llrrp{7.0cm}}
 \toprule
-\textbf{Dữ liệu} & \textbf{Metric} & \textbf{Tác giả} & \textbf{Tái hiện} & \textbf{Cải tiến} & \textbf{Diễn giải}\\
+\textbf{Dữ liệu} & \textbf{Metric} & \textbf{Tái hiện} & \textbf{Cải tiến} & \textbf{Diễn giải}\\
 \midrule
-D1 & Recall & 0,96 & 0,7800 & 0,7000 & Cải tiến đánh đổi một phần Recall để tăng F1/MCC; paper chỉ là tham chiếu\\
-D1 & F1 & 0,95 & 0,2591 & 0,3043 & 0,2591 $\rightarrow$ 0,3043 là cải thiện hợp lệ trên cùng test\\
-D1 & MCC & -- & 0,2816 & 0,3119 & MCC tăng trên cùng strict protocol\\
+D1 & Accuracy & 0,7818 & 0,8434 & Tăng Accuracy khi điều chỉnh điểm vận hành\\
+D1 & Precision & 0,1554 & 0,1944 & Precision lớp stroke tăng\\
+D1 & Recall & 0,7800 & 0,7000 & Đánh đổi 0,08 Recall để giảm false positive và tăng F1/MCC\\
+D1 & F1 & 0,2591 & 0,3043 & F1 tăng khoảng 17,4\% tương đối\\
+D1 & MCC & 0,2816 & 0,3119 & MCC tăng, cho thấy cân bằng dự đoán hai lớp tốt hơn\\
 \midrule
-D2 & Accuracy & 0,98 & 0,9664 & 0,9847 & Cải tiến vượt baseline nhóm; không dùng để tuyên bố vượt paper\\
-D2 & Recall & 0,99 & 0,9944 & 0,9886 & Recall gần như được duy trì\\
-D2 & F1 & 0,98 & 0,7157 & 0,8465 & F1 tăng mạnh trên cùng test\\
-D2 & MCC & 0,9634 & 0,7322 & 0,8484 & Thu hẹp khoảng cách số học tới giá trị paper\\
-D2 & ROC-AUC & -- & 0,9976 & 0,9987 & Cải thiện nhẹ trên cùng test\\
+D2 & Accuracy & 0,9664 & 0,9847 & Accuracy tăng rõ rệt trên cùng test\\
+D2 & Precision & 0,5590 & 0,7401 & Precision lớp stroke tăng mạnh\\
+D2 & Recall & 0,9944 & 0,9886 & Recall giảm rất nhẹ và vẫn ở mức cao\\
+D2 & F1 & 0,7157 & 0,8465 & F1 tăng khoảng 18,3\% tương đối\\
+D2 & MCC & 0,7322 & 0,8484 & MCC tăng đáng kể\\
+D2 & ROC-AUC & 0,9976 & 0,9987 & Cải thiện nhẹ khả năng xếp hạng xác suất\\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-Bảng tổng hợp cho thấy hai kết luận khác nhau. Một là, nhóm chưa thể chứng minh đã tái tạo chính xác các giá trị tuyệt đối của tác giả vì protocol đánh giá trong paper không đủ chi tiết và evaluation distribution khác nhau. Hai là, trên protocol cố định của nhóm, các phương án mở rộng đã tạo ra cải thiện đo được: Dataset 1 tăng F1 và MCC ở điểm vận hành được chọn; Dataset 2 tăng rõ Accuracy, Precision, F1 và MCC trong khi Recall chỉ giảm nhẹ. Vì vậy phát biểu đúng là \textbf{``cải thiện so với baseline tái hiện của nhóm''}, không phải \textbf{``vượt phương pháp của tác giả''}.
+Trên Dataset 1, phương án cải tiến không tối đa hóa Recall bằng mọi giá. Recall giảm từ 0,7800 xuống 0,7000 nhưng Accuracy, Precision, F1 và MCC đều tăng; đây là một điểm vận hành cân bằng hơn giữa phát hiện ca stroke và hạn chế false positive. Trên Dataset 2, cải tiến rõ ràng hơn: Precision, F1, MCC và Accuracy đều tăng đáng kể trong khi Recall chỉ giảm từ 0,9944 xuống 0,9886. Vì cả hai cột sử dụng cùng test set, đây là các kết luận cải tiến trực tiếp và có giá trị hơn việc đối chiếu các con số được tính trên support khác nhau.
 
 \section{Hạn chế và hướng cải tiến tiếp theo}
 
