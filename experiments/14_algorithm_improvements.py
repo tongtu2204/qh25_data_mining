@@ -11,12 +11,14 @@ Phase 1 focuses on Dataset 1:
   - Balanced Random Forest.
 
 Dataset 2 is intentionally staged separately because it has millions of rows;
-LightGBM on the full training set is the primary challenger there.
+LightGBM on the full training set is the primary challenger there. CatBoost on
+Dataset 2 is enabled only after the raw-data pipeline is verified on Dataset 1.
 
 Run from repository root, e.g.
 python experiments/14_algorithm_improvements.py --dataset dataset1 --data data/healthcare-dataset-stroke-data.csv
 """
 import argparse
+import hashlib
 import json
 import platform
 import time
@@ -73,6 +75,14 @@ def specificity_threshold(y, p, target=SPEC_TARGET):
     return best
 
 
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as f:
+        for block in iter(lambda: f.read(8 * 1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def encode_categories(df):
     x = df.copy()
     for c in CATEGORICAL_COLS:
@@ -83,22 +93,35 @@ def encode_categories(df):
 
 
 def catboost_d1(xfit, yfit, xval, yval, xt, yt, xe):
+    """Tune iterations on inner validation, then refit on outer train.
+
+    Validation probabilities are deliberately produced by the probe model before
+    xval is returned to training. This prevents threshold-selection leakage.
+    """
     from catboost import CatBoostClassifier
-    # Native categorical processing: no one-hot, no SMOTE, no PCA.
-    fit = encode_categories(xfit); val = encode_categories(xval)
-    train = encode_categories(xt); test = encode_categories(xe)
+
+    fit = encode_categories(xfit)
+    val = encode_categories(xval)
+    train = encode_categories(xt)
+    test = encode_categories(xe)
     params = dict(
         iterations=1200, depth=6, learning_rate=0.03, loss_function="Logloss",
         eval_metric="AUC", auto_class_weights="Balanced", random_seed=SEED_INNER,
         l2_leaf_reg=5.0, random_strength=0.5, verbose=False, allow_writing_files=False,
     )
     probe = CatBoostClassifier(**params)
-    probe.fit(fit, yfit, cat_features=CATEGORICAL_COLS, eval_set=(val, yval), early_stopping_rounds=100)
+    probe.fit(
+        fit, yfit, cat_features=CATEGORICAL_COLS,
+        eval_set=(val, yval), early_stopping_rounds=100,
+    )
+    validation_prob = probe.predict_proba(val)[:, 1]
     best_iter = max(50, int(probe.get_best_iteration()) + 1)
+
     final_params = dict(params, iterations=best_iter)
     final = CatBoostClassifier(**final_params)
     final.fit(train, yt, cat_features=CATEGORICAL_COLS)
-    return final, final.predict_proba(test)[:, 1], final_params
+    test_prob = final.predict_proba(test)[:, 1]
+    return final, test_prob, validation_prob, final_params
 
 
 def sklearn_preprocessor():
@@ -148,6 +171,8 @@ def main():
                     choices=["catboost", "lightgbm", "balanced_rf"])
     args = ap.parse_args()
 
+    if not args.data.exists():
+        ap.error(f"raw data not found: {args.data}")
     if args.models is None:
         args.models = ["catboost", "lightgbm", "balanced_rf"] if args.dataset == "dataset1" else ["lightgbm"]
 
@@ -156,18 +181,41 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     raw = load_raw_dataset(args.data, args.dataset)
+    missing_binary = raw[["stroke", "hypertension", "heart_disease"]].isna().sum().to_dict()
+    if any(missing_binary.values()):
+        raise ValueError(f"Binary missing values need an explicit policy: {missing_binary}")
+    raw_rows = len(raw)
     df = clean_before_split(raw, args.dataset)
-    X = df[FEATURE_COLS].copy(); y = df.stroke.to_numpy(dtype="int8")
-    itr, ite = train_test_split(np.arange(len(y)), test_size=.2, random_state=SEED_SPLIT, stratify=y)
+    if df.stroke.nunique() != 2:
+        raise ValueError("Both target classes are required")
+
+    X = df[FEATURE_COLS].copy()
+    y = df.stroke.to_numpy(dtype="int8")
+    itr, ite = train_test_split(
+        np.arange(len(y)), test_size=.2, random_state=SEED_SPLIT, stratify=y,
+    )
     xt, xe, yt, ye = X.iloc[itr], X.iloc[ite], y[itr], y[ite]
-    fit_idx, val_idx = train_test_split(np.arange(len(yt)), test_size=.2, random_state=SEED_INNER, stratify=yt)
+    fit_idx, val_idx = train_test_split(
+        np.arange(len(yt)), test_size=.2, random_state=SEED_INNER, stratify=yt,
+    )
     xfit, xval, yfit, yval = xt.iloc[fit_idx], xt.iloc[val_idx], yt[fit_idx], yt[val_idx]
 
-    # Frozen split identity makes comparison with Experiment 13 auditable.
-    split_meta = dict(dataset=args.dataset, cleaned_rows=len(y), train_rows=len(yt), test_rows=len(ye),
-                      train_positive=int(yt.sum()), test_positive=int(ye.sum()), seed_split=SEED_SPLIT,
-                      seed_inner=SEED_INNER, untouched_test=True, models=args.models,
-                      python=platform.python_version())
+    split_meta = dict(
+        status="running", dataset=args.dataset, raw_rows=raw_rows, cleaned_rows=len(y),
+        train_rows=len(yt), test_rows=len(ye), train_positive=int(yt.sum()),
+        test_positive=int(ye.sum()), inner_fit_rows=len(yfit), inner_validation_rows=len(yval),
+        seed_split=SEED_SPLIT, seed_inner=SEED_INNER, untouched_test=True,
+        threshold_source="held-out 20% of outer training; never fit by threshold-selection model",
+        specificity_target=SPEC_TARGET, models=args.models, python=platform.python_version(),
+        input_sha256=file_sha256(args.data), input_size_bytes=args.data.stat().st_size,
+        missing_binary=missing_binary,
+        protocol_notes=[
+            "Outer test labels are used only for final reporting.",
+            "Thresholds are frozen from inner validation before test evaluation.",
+            "CatBoost uses native categorical features; no one-hot, SMOTE or PCA.",
+            "Final CatBoost refit may use all outer-training rows only after threshold selection probabilities are produced.",
+        ],
+    )
     (out / "metadata.json").write_text(json.dumps(split_meta, indent=2), encoding="utf-8")
 
     rows = []
@@ -175,13 +223,10 @@ def main():
         start = time.perf_counter()
         if name == "catboost":
             if args.dataset != "dataset1":
-                raise ValueError("CatBoost is staged for D1 first; use --models lightgbm for D2.")
-            model, prob, params = catboost_d1(xfit, yfit, xval, yval, xt, yt, xe)
-            # Threshold must come from inner validation, not test.
-            pv = model.predict_proba(encode_categories(xval))[:, 1]
+                raise ValueError("CatBoost is staged for D1 first; verify D1 raw pipeline before D2.")
+            model, prob, pv, params = catboost_d1(xfit, yfit, xval, yval, xt, yt, xe)
         elif name == "lightgbm":
             model, prob, params = lightgbm_model(xt, yt, xe)
-            # Separate inner model to choose threshold without reading test labels.
             inner, pv, _ = lightgbm_model(xfit, yfit, xval)
             del inner
         elif name == "balanced_rf":
@@ -193,19 +238,29 @@ def main():
         else:
             raise AssertionError(name)
 
-        thresholds = {"default_0.5": .5, "specificity_0.85": specificity_threshold(yval, pv, .85)}
+        thresholds = {
+            "default_0.5": .5,
+            "specificity_0.85": specificity_threshold(yval, pv, SPEC_TARGET),
+        }
+        validation_rows = []
         for policy, threshold in thresholds.items():
-            rows.append(dict(model=name, policy=policy, seconds=time.perf_counter()-start,
-                             params=json.dumps(params, sort_keys=True), **evaluate(ye, prob, threshold)))
+            validation_rows.append(dict(model=name, policy=policy, **evaluate(yval, pv, threshold)))
+            rows.append(dict(
+                model=name, policy=policy, seconds=time.perf_counter() - start,
+                params=json.dumps(params, sort_keys=True), **evaluate(ye, prob, threshold),
+            ))
+        pd.DataFrame(validation_rows).to_csv(out / f"{name}_validation.csv", index=False)
         pd.DataFrame(rows).to_csv(out / "test_comparison.csv", index=False)
         print(json.dumps(rows[-2:], indent=2), flush=True)
+        del model
 
-    # Selection is reported transparently; primary ranking is MCC, then F1, with Recall as guardrail.
     result = pd.DataFrame(rows)
     result["eligible_recall_0.70"] = result.recall >= .70
-    result.sort_values(["eligible_recall_0.70", "mcc", "f1", "recall"], ascending=False).to_csv(
-        out / "ranked_comparison.csv", index=False)
+    result.sort_values(
+        ["eligible_recall_0.70", "mcc", "f1", "recall"], ascending=False,
+    ).to_csv(out / "ranked_comparison.csv", index=False)
     split_meta["status"] = "completed"
+    split_meta["test_result_rows"] = len(rows)
     (out / "metadata.json").write_text(json.dumps(split_meta, indent=2), encoding="utf-8")
 
 
