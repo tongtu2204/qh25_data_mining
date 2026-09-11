@@ -41,7 +41,6 @@
 \captionsetup{font=normalsize,labelfont=bf,labelsep=period,justification=centering,singlelinecheck=true,skip=6pt}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!55!black}
 
-% Giảm khoảng trắng và cho phép LaTeX đặt hình linh hoạt gần vị trí được tham chiếu.
 \setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
 \setlength{\floatsep}{10pt plus 2pt minus 2pt}
 \setlength{\intextsep}{10pt plus 2pt minus 2pt}
@@ -90,8 +89,6 @@
 \newcommand{\ReportYear}{09/2026}
 \newcommand{\ReportTitle}{CẢI THIỆN DỰ ĐOÁN NGUY CƠ ĐỘT QUỴ BẰNG CÁCH TÍCH HỢP XGBOOST, PHÂN TÍCH THÀNH PHẦN CHÍNH TỐI ƯU VÀ TRÍ TUỆ NHÂN TẠO GIẢI THÍCH ĐƯỢC}
 
-% Hình mặc định được căn giữa, giới hạn cả chiều rộng và chiều cao.
-% [htbp] tránh khoảng trắng lớn do ép mọi hình đứng đúng vị trí bằng [H].
 \newcommand{\paperfig}[3][0.82\linewidth]{%
   \begin{figure}[htbp]
     \centering
@@ -102,7 +99,6 @@
 \begin{document}
 
 % ==================== BÌA ====================
-% Bố cục kế thừa từ nhánh linh; chỉ giữ một trang bìa đang sử dụng.
 \begin{titlepage}
 \thispagestyle{empty}
 \thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
@@ -129,8 +125,6 @@
 \end{titlepage}
 
 % ==================== PHẦN ĐẦU ====================
-% Thứ tự front matter giữ theo nhánh linh: thông tin bài báo -> tóm tắt ->
-% mục lục -> viết tắt -> danh mục hình -> danh mục bảng.
 \frontmatter
 \pagenumbering{roman}
 \setcounter{page}{1}
@@ -172,6 +166,7 @@
 \FloatBarrier
 \clearpage
 \input{De_xuat.tex}
+\input{Exp14_NewMethods.tex}
 \FloatBarrier
 \clearpage
 \input{Ketluan.tex}
