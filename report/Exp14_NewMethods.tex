@@ -69,3 +69,5 @@ Các thử nghiệm cho thấy thay thế XGBoost bằng một họ thuật toá
 Với Dataset 2 quy mô lớn, XGBoost kết hợp undersampling và PCA vẫn là cấu hình tốt nhất xét đồng thời Precision, Recall, F1 và MCC. LightGBM weighted đạt Recall cao hơn nhưng phải đánh đổi bằng số false positive lớn hơn. Do đó, ảnh hưởng của \textbf{cơ chế xử lý mất cân bằng và operating threshold ít nhất quan trọng tương đương việc lựa chọn họ mô hình}.
 
 Kết luận của giai đoạn mở rộng không phải là một thuật toán mới có thể thay thế XGBoost trong mọi trường hợp. Thay vào đó, phương pháp tối ưu phụ thuộc vào cấu trúc và quy mô dữ liệu: \textbf{Balanced Random Forest là phương án mở rộng tốt nhất cho Dataset 1}, trong khi \textbf{XGBoost + undersampling + PCA tiếp tục là cấu hình tốt nhất cho Dataset 2}. Các kết quả âm tính của LightGBM, EasyEnsemble và Focal-loss XGBoost cũng được giữ lại để bảo đảm báo cáo phản ánh đầy đủ quá trình thử nghiệm thay vì chỉ lựa chọn hậu nghiệm các kết quả thuận lợi.
+
+% Trigger CI rebuild after adding the PDF workflow.
