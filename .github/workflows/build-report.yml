@@ -28,23 +28,9 @@ jobs:
         working-directory: report
         run: |
           set -e
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('De_xuat.tex')
-          s = p.read_text(encoding='utf-8')
-          marker = r'\label{tab:d1_table5_benchmark}'
-          pos = s.index(marker)
-          open_tag = r'\resizebox{\linewidth}{!}{%'
-          start = s.index(open_tag, pos)
-          s = s[:start] + s[start:].replace(open_tag + '\n', '', 1)
-          # This table is small enough at scriptsize without resizebox. Removing the
-          # legacy wrapper avoids a TeX Live portability error while preserving data.
-          tail = s[start:]
-          tail = tail.replace(r'\begin{tabular}{lrrrrrp{4.8cm}}', r'\begin{tabular}{lrrrrrr}', 1)
-          tail = tail.replace(r'\end{tabular}}', r'\end{tabular}', 1)
-          s = s[:start] + tail
-          p.write_text(s, encoding='utf-8')
-          PY
+          # A row that begins literally with [21] can be parsed by TeX as an
+          # optional row-spacing argument. Group it so the displayed text stays [21].
+          sed -i 's/^\[21\] \& 0,85/{[21]} \& 0,85/' De_xuat.tex
           xelatex -interaction=nonstopmode -halt-on-error main.tex
           xelatex -interaction=nonstopmode -halt-on-error main.tex
           xelatex -interaction=nonstopmode -halt-on-error main.tex
@@ -53,7 +39,6 @@ jobs:
           pdftotext main.pdf report_text.txt
           grep -q 'Balanced Random Forest' report_text.txt
           grep -q 'LightGBM' report_text.txt
-          # Also ensure Poppler can render the final page without a PDF syntax error.
           pages=$(pdfinfo main.pdf | awk '/^Pages:/ {print $2}')
           pdftoppm -f "$pages" -singlefile -png -r 72 main.pdf /tmp/report_last >/dev/null 2>&1
           test -s /tmp/report_last.png
