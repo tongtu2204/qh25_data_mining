@@ -1,23 +1,88 @@
 \chapter{TÁI HIỆN KẾT QUẢ VÀ ĐỊNH HƯỚNG CẢI TIẾN}
 
-Chương này trình bày phần thực nghiệm độc lập của nhóm theo ba tầng tách biệt: \textbf{tái hiện bài báo}, \textbf{phân tích thành phần (ablation)} và \textbf{mở rộng/cải tiến}. Sự phân tách này đặc biệt quan trọng vì bài báo tập trung báo cáo kết quả của pipeline có xử lý mất cân bằng; trong khi nhóm còn đánh giá thêm mô hình trên tập kiểm tra giữ nguyên phân bố lớp. Hai loại kết quả này không được dùng để so sánh trực tiếp với nhau.
+Chương này trình bày phần thực nghiệm độc lập của nhóm theo ba tầng tách biệt: \textbf{tái hiện phương pháp của bài báo}, \textbf{đánh giá có kiểm soát trên phân bố lớp gốc} và \textbf{mở rộng/cải tiến}. Việc tách ba tầng này là cần thiết vì bài báo sử dụng SMOTE cho Dataset 1 và random undersampling cho Dataset 2, nhưng các bảng kết quả chính sau xử lý mất cân bằng được báo cáo trên các tập có phân bố lớp gần cân bằng. Trong khi đó, để đánh giá khả năng hoạt động của mô hình trong điều kiện gần với phân bố dữ liệu ban đầu, nhóm giữ nguyên tập test sau khi chia dữ liệu và chỉ thực hiện resampling trên phần huấn luyện. Vì vậy, các con số của tác giả và các con số trên test giữ nguyên phân bố của nhóm không được diễn giải như những phép đo hoàn toàn tương đương.
 
-\section{Mục tiêu và nguyên tắc tái hiện}
+\section{Đọc lại giao thức và kết quả công bố của tác giả}
 
-Mục tiêu thứ nhất là tái dựng pipeline XGBoost của tác giả trên hai bộ dữ liệu và kiểm tra mức độ có thể lặp lại các kết quả đã công bố. Theo pipeline được nhóm tái dựng, Dataset 1 sử dụng SMOTE để xử lý mất cân bằng, còn Dataset 2 sử dụng Random UnderSampler. PCA sau đó được sử dụng để giảm chiều trước khi huấn luyện XGBoost.
+\subsection{Phương pháp xử lý mất cân bằng}
 
-Mục tiêu thứ hai là đánh giá từng thành phần của pipeline bằng ablation study. Nhóm lần lượt khảo sát mô hình cơ sở, tác động của PCA, xử lý mất cân bằng và tuning. Các bước này chưa được gọi là đề xuất cải tiến vì phần lớn là các thành phần đã thuộc pipeline gốc hoặc phục vụ mục tiêu tái hiện.
+Về \textit{loại kỹ thuật cân bằng}, nhóm đã tái hiện đúng lựa chọn của bài báo. Dataset 1 có 5.110 quan sát và chỉ 249 trường hợp đột quỵ; tác giả sử dụng \textbf{SMOTE} để sinh thêm mẫu của lớp thiểu số. Dataset 2 có quy mô rất lớn; tác giả sử dụng \textbf{random undersampling} để giảm lớp đa số về gần quy mô lớp thiểu số. Sau đó PCA được dùng để giảm chiều và XGBoost thực hiện phân loại.
 
-Mục tiêu thứ ba, sau khi đã có baseline tái hiện, là khảo sát các lựa chọn khác với pipeline gốc: SMOTENC và học có trọng số lớp trên Dataset 1; học có trọng số lớp trên Dataset 2; đồng thời khảo sát việc có/không PCA và lựa chọn threshold theo yêu cầu specificity. Đây mới là phần mở rộng phương pháp của nhóm.
+Như vậy, khác biệt giữa kết quả của nhóm và bài báo \textbf{không xuất phát từ việc nhóm chọn sai thuật toán balancing}. Điểm chưa thể khôi phục chính xác nằm ở \textit{giao thức áp dụng} balancing và giao thức đánh giá.
 
-\section{Quá trình tái dựng pipeline}
+\subsection{Những điểm chưa được mô tả đủ rõ trong bài báo}
 
-Thay vì chỉ báo cáo mô hình cuối cùng, nhóm lưu lại kết quả sau từng bước để xác định đóng góp của các thành phần. Bảng~\ref{tab:model_progression} trình bày chuỗi thực nghiệm trên tập kiểm tra giữ nguyên phân bố lớp. Đây là đánh giá bổ sung của nhóm nhằm quan sát hành vi mô hình trong điều kiện lớp mất cân bằng ban đầu; các con số trong bảng không được dùng để so trực tiếp với kết quả công bố của tác giả.
+Bài báo cho biết dữ liệu được chia theo tỷ lệ 80\% để huấn luyện và 20\% để kiểm tra. Ngay sau mô tả này, tác giả trình bày hai phương án ở Dataset 1: (a) không cân bằng lớp và (b) có cân bằng lớp. Tuy nhiên, bài báo không mô tả đủ chi tiết để xác định duy nhất các bước: balancing được thực hiện trước hay sau khi chia train/test; nếu chia trước thì resampling chỉ được áp dụng lên train hay còn được áp dụng lên tập dùng để tính classification report; và trong 10-fold cross-validation, resampling được thực hiện trước khi tạo các fold hay bên trong từng training fold.
+
+Các giá trị \textit{support} trong chính các bảng kết quả cho thấy đây không phải khác biệt nhỏ. Với Dataset 1, phương án không balancing có tổng support 1.022 quan sát, phù hợp với 20\% của 5.110. Sau balancing, support được báo cáo là 976 mẫu lớp 0 và 968 mẫu lớp 1, tổng cộng 1.944 quan sát và gần cân bằng 50:50. Vì vậy các kết quả nổi bật của tác giả như Precision khoảng 0,93, Recall khoảng 0,96 và F1 khoảng 0,95 cho lớp stroke được tính trong một điều kiện đánh giá có phân bố lớp rất khác tập test gốc của nhóm.
+
+Dataset 2 còn cho thấy một điểm khó tái dựng hơn. Bảng so sánh ``without PCA'' và ``with PCA'' của tác giả có số lượng support khác nhau rất lớn, trong khi về nguyên tắc PCA chỉ biến đổi và giảm \textit{số đặc trưng}, không tự làm giảm \textit{số quan sát}. Do đó sự thay đổi số hàng phải đến từ một bước lấy mẫu hoặc một tập đánh giá khác; bài báo không cung cấp đủ thông tin để xác định chính xác bước này. Đây là lý do nhóm không tạo một ``paper-like test'' bằng cách tự cân bằng test rồi coi đó là bản sao chính xác của giao thức tác giả.
+
+Ngoài ra, bài báo không công bố danh sách quan sát thuộc từng train/test split, random seed đầy đủ cho các bước stochastic, cũng như toàn bộ chi tiết về thời điểm fit preprocessing, PCA và resampling tương đối với cross-validation. Các yếu tố này đều có thể ảnh hưởng đáng kể tới kết quả, đặc biệt ở Dataset 1 khi số ca dương tính ban đầu rất nhỏ.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Những thành phần có thể và chưa thể tái dựng chính xác từ bài báo}
+\label{tab:paper_protocol_clarity}
+\begin{tabular}{p{5.0cm}p{3.0cm}p{6.0cm}}
+\toprule
+\textbf{Thành phần} & \textbf{Mức độ xác định} & \textbf{Diễn giải}\\
+\midrule
+Dataset 1 dùng SMOTE & Rõ & Nhóm sử dụng cùng kỹ thuật balancing\\
+Dataset 2 dùng random undersampling & Rõ & Nhóm sử dụng cùng kỹ thuật balancing\\
+Chia dữ liệu 80/20 & Rõ ở mức tỷ lệ & Không có exact split / danh sách sample\\
+Balancing trước hay sau split & Chưa rõ & Không đủ thông tin để tái dựng duy nhất\\
+Balancing trong cross-validation & Chưa rõ & Không rõ resampling trước CV hay trong từng fold\\
+Tập tính classification report sau balancing & Có dấu hiệu đã cân bằng & Support D1 sau balancing gần 50:50\\
+Support D2 khi có/không PCA & Khó giải thích & PCA không làm thay đổi số hàng nhưng support thay đổi mạnh\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Tái hiện phương pháp và nguyên nhân sai khác với kết quả công bố}
+
+Nhóm tái dựng các thành phần cốt lõi của phương pháp: XGBoost, xử lý mất cân bằng đúng loại kỹ thuật mà tác giả sử dụng, PCA với tiêu chuẩn giữ tối thiểu khoảng 95\% phương sai và tuning mô hình. Dataset 1 sử dụng SMOTE; Dataset 2 sử dụng Random UnderSampler. Tuy nhiên, nhóm chủ động không áp dụng resampling lên tập test: dữ liệu được chia trước, mọi phép học tham số và resampling được thực hiện trên train hoặc bên trong training fold, còn test giữ nguyên phân bố lớp ban đầu.
+
+Vì vậy, khi kết quả ban đầu của nhóm thấp hơn các con số tác giả công bố, điều này không nên được diễn giải đơn giản là ``mô hình tái hiện kém hơn''. Có ít nhất ba nguyên nhân. Thứ nhất, distribution của tập đánh giá khác nhau: classification report nổi bật của tác giả được báo cáo sau balancing, còn test chính của nhóm giữ prevalence gốc. Thứ hai, exact split, seed và vị trí của resampling trong pipeline không được công bố đầy đủ, làm cho việc tái tạo chính xác từng mẫu đánh giá là không thể. Thứ ba, Dataset 2 có thay đổi support giữa các cấu hình PCA/no-PCA mà bản thân PCA không thể giải thích; điều này cho thấy còn tồn tại khác biệt sampling/evaluation chưa được mô tả trong bài báo.
+
+Bảng~\ref{tab:author_reproduction_context} vì vậy đặt kết quả tác giả cạnh kết quả tái hiện để cho thấy khoảng cách số học, nhưng không coi đó là phép so sánh ngang hàng về protocol.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kết quả công bố và kết quả tái hiện của nhóm trong bối cảnh khác biệt giao thức}
+\label{tab:author_reproduction_context}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrp{6.0cm}}
+\toprule
+\textbf{Dữ liệu} & \textbf{Chỉ số} & \textbf{Tác giả} & \textbf{Nhóm} & \textbf{Lưu ý}\\
+\midrule
+Dataset 1 & Accuracy / CV Accuracy & 0,95 / 0,9532 & 0,7652 & Kết quả tác giả gắn với pipeline sau balancing; exact evaluation protocol không tái dựng được\\
+Dataset 1 & Recall lớp stroke & 0,96 & 0,7800 & Tác giả báo cáo trên support gần cân bằng; nhóm đánh giá trên test gốc\\
+Dataset 1 & F1 lớp stroke & 0,95 & 0,2591 & Không so trực tiếp do prevalence/evaluation distribution khác nhau\\
+\midrule
+Dataset 2 & Accuracy / CV Accuracy & 0,98 / 0,9903 & 0,9654 & Tác giả dùng random undersampling nhưng support của các cấu hình không nhất quán\\
+Dataset 2 & Recall lớp stroke & 0,99 & 0,9944 & Giá trị gần nhau nhưng protocol vẫn khác\\
+Dataset 2 & F1 lớp stroke & 0,98 & 0,7157 & Precision/F1 nhạy với phân bố lớp đánh giá\\
+Dataset 2 & MCC & 0,9634 & 0,7322 & Đặt cạnh để tham chiếu, không kết luận hơn/kém trực tiếp\\
+Dataset 2 & Cohen's Kappa & 0,9632 & 0,6993 & Đặt cạnh để tham chiếu, không kết luận hơn/kém trực tiếp\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Nhìn riêng Dataset 1, khoảng cách F1 0,95 so với 0,2591 có vẻ rất lớn nếu bỏ qua protocol. Tuy nhiên, tập test của nhóm chỉ có 50 ca stroke trên 1.022 quan sát (prevalence khoảng 4,89\%), trong khi support sau balancing mà tác giả báo cáo gần 50:50. Khi prevalence giảm mạnh, false positive có ảnh hưởng lớn tới Precision và do đó kéo F1 xuống đáng kể. Đây là một lý do trực tiếp khiến các metric của hai bên không nên được đọc như kết quả của cùng một phép thử.
+
+\section{Đánh giá có kiểm soát trên test giữ nguyên phân bố lớp}
+
+Để tạo một benchmark nhất quán cho các thí nghiệm của nhóm, nhóm sử dụng giao thức cố định: chia train/test trước; imputation, encoding, scaling, PCA và resampling chỉ được fit trên train hoặc bên trong từng training fold; tập test không resample; mọi cấu hình được đánh giá trên cùng test split. Giao thức này không nhằm khẳng định là bản sao chính xác cách tác giả đã thực hiện, mà nhằm bảo đảm so sánh công bằng giữa các cấu hình do nhóm chạy.
+
+Bảng~\ref{tab:model_progression} trình bày quá trình từ baseline tới pipeline tái hiện hoàn chỉnh. Nó cũng giải thích vì sao chỉ nhìn Accuracy có thể gây hiểu nhầm trong bài toán stroke prediction mất cân bằng.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Diễn biến kết quả qua các bước tái dựng pipeline}
+\caption{Diễn biến kết quả qua các bước xây dựng pipeline trên test giữ nguyên phân bố lớp}
 \label{tab:model_progression}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrrrr}
@@ -39,66 +104,44 @@ Dataset 2 & Balancing + PCA + tuning & 0,9664 & 0,5590 & 0,9944 & 0,7157 & 0,997
 \end{tabular}}
 \end{table}
 
-Trên Dataset 1, baseline đạt Accuracy gần 95\% nhưng Recall chỉ 6\%, cho thấy Accuracy cao chủ yếu do lớp không đột quỵ chiếm ưu thế. Khi hoàn thiện balancing, PCA và tuning, Recall tăng lên 78\%, F1 tăng từ 0,1053 lên 0,2591 và MCC tăng từ 0,1462 lên 0,2816, đổi lại Accuracy giảm. Trên Dataset 2, tác động còn rõ hơn: Recall tăng từ 0,0986 lên 0,9944, F1 từ 0,1780 lên 0,7157 và MCC từ 0,2934 lên 0,7322. Kết quả này cho thấy xử lý mất cân bằng là thành phần thiết yếu nếu mục tiêu là phát hiện lớp đột quỵ thay vì chỉ tối đa hóa Accuracy.
+Trên Dataset 1, baseline không PCA đạt Accuracy 0,9501 nhưng Recall chỉ 0,06: mô hình gần như dự đoán lớp đa số và bỏ sót hầu hết ca đột quỵ. Sau khi hoàn thiện balancing, PCA và tuning, Recall tăng lên 0,78, F1 lên 0,2591 và MCC lên 0,2816, dù Accuracy giảm. Đây là minh họa trực tiếp cho việc Accuracy cao ban đầu không đồng nghĩa mô hình hữu ích cho lớp stroke.
+
+Trên Dataset 2, Recall tăng từ 0,0986 ở baseline lên 0,9944 ở pipeline hoàn chỉnh; F1 tăng từ 0,1780 lên 0,7157 và MCC từ 0,2934 lên 0,7322. Kết quả này xác nhận vai trò của xử lý mất cân bằng đối với lớp mục tiêu trên chính protocol cố định của nhóm.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.90\textwidth]{../results/final_reproduction/dataset1_model_progression.png}
-    \caption{Diễn biến hiệu năng qua các bước tái dựng pipeline trên Dataset 1.}
+    \caption{Diễn biến hiệu năng qua các bước xây dựng pipeline trên Dataset 1.}
     \label{fig:d1_model_progression}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.90\textwidth]{../results/final_reproduction/dataset2_model_progression.png}
-    \caption{Diễn biến hiệu năng qua các bước tái dựng pipeline trên Dataset 2.}
+    \caption{Diễn biến hiệu năng qua các bước xây dựng pipeline trên Dataset 2.}
     \label{fig:d2_model_progression}
 \end{figure}
 
-Hai hình trên được trình bày riêng cho từng bộ dữ liệu. Nhóm không gộp các metric của Dataset 1 và Dataset 2 vào cùng một hình vì hai bộ dữ liệu khác nhau đáng kể về quy mô, nguồn dữ liệu và độ khó dự đoán.
+Hai hình được trình bày riêng vì Dataset 1 và Dataset 2 khác nhau lớn về quy mô, nguồn dữ liệu và độ khó dự đoán. Báo cáo không còn sử dụng hình gộp các metric cuối cùng của hai dataset, vì hình đó không trả lời một câu hỏi thực nghiệm cụ thể.
 
-\section{Kết quả tái hiện so với bài báo}
+\section{Ablation: balancing, PCA và tuning}
 
-Sau khi hoàn thiện pipeline theo cách hiểu từ bài báo, Dataset 1 sử dụng SMOTE và giữ 11 thành phần PCA, giải thích khoảng 96,50\% phương sai. Dataset 2 sử dụng Random UnderSampler và giữ 11 thành phần PCA, giải thích khoảng 95,86\% phương sai. Bảng~\ref{tab:reproduction_comparison} chỉ đối chiếu các chỉ số có giá trị tương ứng được bài báo công bố.
+Các kết quả trên cho phép phân biệt rõ vai trò của từng thành phần. Thứ nhất, balancing là cần thiết nếu mục tiêu là phát hiện lớp stroke. Thứ hai, PCA không mặc nhiên cải thiện mọi cấu hình: trên Dataset 1, chỉ thêm PCA vào baseline làm Recall giảm từ 0,06 xuống 0,04; lợi ích của PCA phụ thuộc vào pipeline mà nó được kết hợp. Thứ ba, tuning làm thay đổi mạnh điểm vận hành của mô hình, vì vậy cần đánh giá Recall, Precision, F1 và MCC thay vì chỉ Accuracy.
 
-\begin{table}[H]
-\centering
-\caption{Đối chiếu kết quả công bố và kết quả tái hiện}
-\label{tab:reproduction_comparison}
-\begin{tabular}{llrrr}
-\toprule
-\textbf{Dữ liệu} & \textbf{Chỉ số} & \textbf{Bài báo} & \textbf{Tái hiện} & \textbf{Chênh lệch}\\
-\midrule
-Dataset 1 & CV Accuracy & 0,9532 & 0,7652 & -0,1880\\
-Dataset 2 & CV Accuracy & 0,9903 & 0,9654 & -0,0249\\
-Dataset 2 & MCC & 0,9634 & 0,7322 & -0,2312\\
-Dataset 2 & Cohen's Kappa & 0,9632 & 0,6993 & -0,2639\\
-\bottomrule
-\end{tabular}
-\end{table}
+Quan trọng về thuật ngữ: \textbf{SMOTE trên Dataset 1 và random undersampling trên Dataset 2 không phải đề xuất cải tiến của nhóm}; đây là các kỹ thuật balancing đã được tác giả sử dụng và nhóm tái hiện. Thử nghiệm PCA/no-PCA là \textit{ablation}. Các phương pháp thay thế như SMOTENC, cost-sensitive learning và tối ưu threshold mới được xem là phần mở rộng của nhóm.
 
-Dataset 2 tái hiện gần kết quả công bố hơn về Accuracy, nhưng MCC và Cohen's Kappa vẫn thấp hơn đáng kể. Dataset 1 còn sai khác lớn. Do đó, nhóm không tuyên bố đã tái lập hoàn toàn các con số của tác giả. Một số chi tiết triển khai như thời điểm resampling, cách chia dữ liệu, encoding, random seed, hyperparameter và cách tổng hợp chỉ số cross-validation có thể tạo ra sai khác.
+\section{Mở rộng/cải tiến trên cùng giao thức đánh giá}
 
-Quan trọng hơn, bài báo không cung cấp một bộ kết quả tương ứng trên tập test giữ nguyên phân bố lớp để nhóm đối chiếu trực tiếp với phần đánh giá bổ sung của mình. Vì vậy, các kết quả trên test giữ nguyên phân bố lớp trong phần sau chỉ được dùng để so sánh \textbf{các cấu hình của nhóm với nhau trên cùng một giao thức}.
+Từ benchmark giữ nguyên test distribution, nhóm thử các lựa chọn thay thế mà không thay đổi test split. Nhờ đó, các kết luận ``cải thiện'' trong phần này là phép so sánh hợp lệ giữa các experiment của nhóm.
 
-\section{Ablation: vai trò của balancing, PCA và tuning}
+\subsection{Dataset 1: SMOTE, SMOTENC và cost-sensitive learning}
 
-Kết quả ở Bảng~\ref{tab:model_progression} cho phép rút ra ba nhận xét. Thứ nhất, Accuracy đơn lẻ không phù hợp để lựa chọn mô hình trong bài toán mất cân bằng: baseline Dataset 1 có Accuracy 0,9501 nhưng bỏ sót gần như toàn bộ ca đột quỵ. Thứ hai, PCA không phải lúc nào cũng cải thiện mô hình nếu đứng riêng lẻ; trên Dataset 1, thêm PCA vào baseline làm Recall giảm từ 0,06 xuống 0,04. Thứ ba, tác động lớn nhất xuất hiện khi balancing được kết hợp với PCA và tuning, đặc biệt ở Recall, F1 và MCC.
-
-Do đó, trong phần còn lại của chương, SMOTE trên Dataset 1 và Random UnderSampler trên Dataset 2 được xem là \textbf{baseline xử lý mất cân bằng theo pipeline tái hiện}, không được gọi là đề xuất mới. Thử nghiệm có/không PCA được xem là ablation. Những phương pháp thay thế balancing hoặc thay đổi quy tắc quyết định mới được xem là hướng mở rộng của nhóm.
-
-\section{Mở rộng phương pháp xử lý mất cân bằng}
-
-Để so sánh công bằng, nhóm chia train/test trước khi ước lượng các tham số tiền xử lý. Imputation, chuẩn hóa, encoding, PCA và resampling chỉ được fit trên dữ liệu huấn luyện hoặc bên trong từng fold. Tập test giữ nguyên phân bố lớp và không được resample. Ngưỡng phân loại được lựa chọn từ validation hoặc dự đoán out-of-fold rồi khóa trước khi đánh giá test.
-
-\subsection{Dataset 1: từ SMOTE sang SMOTENC và cost-sensitive learning}
-
-SMOTE là phương pháp thuộc baseline tái hiện của Dataset 1. Nhóm mở rộng bằng hai hướng: \textbf{SMOTENC}, nhằm xử lý phù hợp hơn các biến phân loại, và \textbf{cost-sensitive XGBoost} thông qua trọng số lớp, tránh tạo thêm quan sát tổng hợp. Mỗi phương pháp được khảo sát cả có và không PCA.
+Dataset 1 so sánh SMOTE (baseline theo tác giả), SMOTENC và XGBoost có trọng số lớp; mỗi phương pháp được khảo sát với và không với PCA.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Dataset 1: một số cấu hình tại ngưỡng mặc định 0,5 trên cùng tập test giữ nguyên phân bố lớp}
+\caption{Dataset 1: các phương pháp xử lý mất cân bằng tại ngưỡng 0,5}
 \label{tab:d1_methods_default}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrrrr}
@@ -115,35 +158,35 @@ Weighted & Có & 0,7329 & 0,1296 & 0,7800 & 0,2222 & 0,8241 & 0,2416\\
 \end{tabular}}
 \end{table}
 
-Bảng trên cho thấy không có một phương pháp thống trị mọi metric. SMOTENC không PCA cho F1 cao nhất tại ngưỡng 0,5, nhưng Recall chỉ 0,32. Weighted + PCA giữ Recall 0,78 nhưng Precision thấp. Điều này dẫn đến bước mở rộng thứ hai: tối ưu threshold theo mức Specificity mong muốn.
+Không có phương pháp thống trị mọi metric. SMOTENC không PCA có F1 0,3077 ở threshold 0,5 nhưng Recall chỉ 0,32. Weighted + PCA giữ Recall 0,78 nhưng tạo nhiều false positive và Precision chỉ 0,1296. Vì vậy nhóm tiếp tục lựa chọn threshold trên validation theo các mức Specificity mục tiêu, thay vì lựa chọn hậu nghiệm từ test.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Dataset 1: các cấu hình được chọn theo Specificity mục tiêu}
-\label{tab:improvement_d1}
+\caption{Dataset 1: các điểm vận hành được lựa chọn từ validation}
+\label{tab:d1_threshold}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{p{2.1cm} p{4.0cm} r r r r r r}
+\begin{tabular}{p{2.1cm}p{4.0cm}rrrrrr}
 \toprule
-\textbf{Spec. mục tiêu} & \textbf{Cấu hình} & \textbf{Ngưỡng} & \textbf{Precision} & \textbf{Recall} & \textbf{Specificity} & \textbf{F1} & \textbf{MCC}\\
+\textbf{Spec. mục tiêu} & \textbf{Cấu hình} & \textbf{Ngưỡng} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\
 \midrule
-85\% & Weighted + PCA & 0,6704 & 0,1944 & 0,7000 & 0,8508 & 0,3043 & 0,3119\\
-90\% & Weighted, không PCA & 0,1305 & 0,1870 & 0,4600 & 0,8971 & 0,2659 & 0,2368\\
-95\% & Weighted, không PCA & 0,1902 & 0,2381 & 0,3000 & 0,9506 & 0,2655 & 0,2248\\
+85\% & Weighted + PCA & 0,6704 & 0,8434 & 0,1944 & 0,7000 & 0,3043 & 0,3119\\
+90\% & Weighted, không PCA & 0,1305 & 0,8757 & 0,1870 & 0,4600 & 0,2659 & 0,2368\\
+95\% & Weighted, không PCA & 0,1902 & 0,9188 & 0,2381 & 0,3000 & 0,2655 & 0,2248\\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-Ở mức Specificity khoảng 85\%, Weighted + PCA đạt Recall 0,70, F1 0,3043 và MCC 0,3119. So với pipeline tái hiện cuối cùng trên cùng test (Recall 0,78; F1 0,2591; MCC 0,2816), phương án này giảm một phần Recall nhưng tăng F1 và MCC, thể hiện sự cân bằng tốt hơn giữa phát hiện ca bệnh và false positive. Đây là \textbf{cải tiến theo tiêu chí cân bằng hiệu năng}, không phải cải thiện đồng thời mọi chỉ số.
+Tại Specificity mục tiêu khoảng 85\%, Weighted + PCA đạt F1 0,3043 và MCC 0,3119, cao hơn baseline tái hiện tương ứng F1 0,2591 và MCC 0,2816; Recall giảm từ 0,78 xuống 0,70. Vì vậy đây là cải thiện về sự cân bằng của quyết định, không phải cải thiện đồng thời mọi metric.
 
-\subsection{Dataset 2: Undersampling và cost-sensitive learning}
+\subsection{Dataset 2: undersampling và cost-sensitive learning}
 
-Random UnderSampler thuộc baseline tái hiện của Dataset 2. Do đó, việc tiếp tục sử dụng undersampling không được xem là một phương pháp mới; nó đóng vai trò mốc so sánh với weighted XGBoost và với các lựa chọn PCA/threshold.
+Dataset 2 so sánh random undersampling (baseline theo tác giả) với weighted XGBoost, có và không PCA.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Dataset 2: so sánh các phương pháp tại ngưỡng mặc định 0,5}
+\caption{Dataset 2: các phương pháp xử lý mất cân bằng tại ngưỡng 0,5}
 \label{tab:d2_methods_default}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrrrr}
@@ -158,52 +201,43 @@ Weighted & Có & 0,9421 & 0,4233 & 0,9932 & 0,5936 & 0,9956 & 0,6282\\
 \end{tabular}}
 \end{table}
 
-Trên Dataset 2, Undersampling + PCA vẫn là cấu hình mạnh nhất trong nhóm phương án khảo sát tại threshold 0,5. So với baseline tái hiện cuối cùng trên cùng test, cấu hình được tuning lại trong thực nghiệm mở rộng làm Accuracy tăng từ 0,9664 lên 0,9847, Precision từ 0,5590 lên 0,7401, F1 từ 0,7157 lên 0,8465 và MCC từ 0,7322 lên 0,8484; Recall chỉ giảm từ 0,9944 xuống 0,9886. Như vậy, ở Dataset 2, cải thiện hiện tại chủ yếu đến từ \textbf{quy trình lựa chọn cấu hình/tuning tốt hơn trên cùng họ phương pháp}, chứ chưa phải một thuật toán balancing mới vượt Random UnderSampler.
+Ở Dataset 2, phương án tốt nhất vẫn là \textbf{Undersampling + PCA}. Weighted XGBoost không vượt cấu hình này về F1/MCC. Do undersampling chính là họ phương pháp đã có trong paper, kết quả này không được mô tả là ``thuật toán balancing mới vượt tác giả''. Điều nhóm chứng minh được là trên cùng strict protocol, cấu hình được thiết lập/tuning lại đạt Accuracy 0,9847, F1 0,8465 và MCC 0,8484 trong khi Recall vẫn 0,9886.
+
+Việc hạ threshold có thể đưa Recall lên rất cao nhưng phải trả giá bằng số false positive. Chẳng hạn với Undersampling + PCA tại mức Specificity mục tiêu 85\%, Recall đạt 1,0000 nhưng Precision chỉ 0,2346 và tạo 153.928 false positive. Do đó Recall 100\% chỉ là một điểm vận hành, không phải bằng chứng dự đoán hoàn hảo.
+
+\section{Tổng hợp: tác giả, tái hiện và cải tiến}
+
+Để tránh trộn hai câu hỏi nghiên cứu, Bảng~\ref{tab:final_summary} được đọc theo hai chiều. Cột tác giả cho biết mức tham chiếu mà paper công bố; cột tái hiện và cải tiến của nhóm được tính trên cùng test giữ nguyên phân bố, nên hai cột này mới tạo thành phép so sánh trực tiếp cho kết luận về cải tiến.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Dataset 2: Undersampling + PCA tại các ngưỡng vận hành}
-\label{tab:improvement_d2}
+\caption{Tổng hợp kết quả tác giả, baseline tái hiện và phương án mở rộng của nhóm}
+\label{tab:final_summary}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{lrrrrrrr}
+\begin{tabular}{llrrrp{5.0cm}}
 \toprule
-\textbf{Chính sách} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{Specificity} & \textbf{F1} & \textbf{AUC} & \textbf{MCC}\\
+\textbf{Dữ liệu} & \textbf{Metric} & \textbf{Tác giả} & \textbf{Tái hiện} & \textbf{Cải tiến} & \textbf{Diễn giải}\\
 \midrule
-Threshold 0,5 & 0,9847 & 0,7401 & 0,9886 & 0,9846 & 0,8465 & 0,9987 & 0,8484\\
-Spec. 85\% & 0,8611 & 0,2346 & 1,0000 & 0,8550 & 0,3801 & 0,9987 & 0,4479\\
-Spec. 90\% & 0,9122 & 0,3265 & 0,9998 & 0,9083 & 0,4922 & 0,9987 & 0,5445\\
-Spec. 95\% & 0,9518 & 0,4690 & 0,9984 & 0,9497 & 0,6383 & 0,9987 & 0,6668\\
+D1 & Recall & 0,96 & 0,7800 & 0,7000 & Cải tiến đánh đổi một phần Recall để tăng F1/MCC; paper chỉ là tham chiếu\\
+D1 & F1 & 0,95 & 0,2591 & 0,3043 & 0,2591 $\rightarrow$ 0,3043 là cải thiện hợp lệ trên cùng test\\
+D1 & MCC & -- & 0,2816 & 0,3119 & MCC tăng trên cùng strict protocol\\
+\midrule
+D2 & Accuracy & 0,98 & 0,9664 & 0,9847 & Cải tiến vượt baseline nhóm; không dùng để tuyên bố vượt paper\\
+D2 & Recall & 0,99 & 0,9944 & 0,9886 & Recall gần như được duy trì\\
+D2 & F1 & 0,98 & 0,7157 & 0,8465 & F1 tăng mạnh trên cùng test\\
+D2 & MCC & 0,9634 & 0,7322 & 0,8484 & Thu hẹp khoảng cách số học tới giá trị paper\\
+D2 & ROC-AUC & -- & 0,9976 & 0,9987 & Cải thiện nhẹ trên cùng test\\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-Recall bằng 1,0000 tại mục tiêu Specificity 85\% không đồng nghĩa dự đoán hoàn hảo. Ngưỡng 0,0462 khiến mô hình phát hiện toàn bộ 47.192 ca dương tính nhưng đồng thời tạo 153.928 false positive; Precision vì vậy chỉ đạt 0,2346. Threshold được xem là tham số vận hành, cần lựa chọn theo chi phí bỏ sót và chi phí báo động giả.
+Bảng tổng hợp cho thấy hai kết luận khác nhau. Một là, nhóm chưa thể chứng minh đã tái tạo chính xác các giá trị tuyệt đối của tác giả vì protocol đánh giá trong paper không đủ chi tiết và evaluation distribution khác nhau. Hai là, trên protocol cố định của nhóm, các phương án mở rộng đã tạo ra cải thiện đo được: Dataset 1 tăng F1 và MCC ở điểm vận hành được chọn; Dataset 2 tăng rõ Accuracy, Precision, F1 và MCC trong khi Recall chỉ giảm nhẹ. Vì vậy phát biểu đúng là \textbf{``cải thiện so với baseline tái hiện của nhóm''}, không phải \textbf{``vượt phương pháp của tác giả''}.
 
-\section{Tổng hợp kết quả và phạm vi của cải tiến}
+Ở Dataset 2 có thể nói rằng các giá trị cải tiến \textit{thu hẹp khoảng cách số học} tới kết quả paper, ví dụ MCC từ 0,7322 lên 0,8484 so với 0,9634 mà tác giả công bố. Tuy nhiên đây chỉ là mô tả khoảng cách số học; nó không biến hai evaluation protocol thành tương đương.
 
-\begin{table}[H]
-\centering
-\small
-\caption{Kết luận theo từng tầng thực nghiệm}
-\label{tab:three_levels_summary}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{p{3.1cm} p{4.0cm} p{7.0cm}}
-\toprule
-\textbf{Tầng} & \textbf{Thực nghiệm} & \textbf{Kết luận}\\
-\midrule
-Tái hiện tác giả & SMOTE/Undersampling + PCA + XGBoost & Dataset 2 gần paper hơn về Accuracy; Dataset 1 còn sai khác lớn. Chưa tái lập hoàn toàn kết quả công bố.\\
-Ablation & Có/không balancing; có/không PCA; trước/sau tuning & Balancing là thành phần quyết định khả năng phát hiện lớp dương tính; PCA có tác động phụ thuộc dataset; tuning cải thiện rõ F1/MCC.\\
-Mở rộng Dataset 1 & SMOTENC; Weighted; threshold & Có thể cải thiện F1/MCC hoặc điều khiển trade-off Recall--Specificity, nhưng chưa có cấu hình thống trị mọi metric.\\
-Mở rộng Dataset 2 & Weighted; PCA/no-PCA; threshold; tuning lại undersampling & Weighted không vượt Undersampling + PCA. Cấu hình undersampling được tuning lại cải thiện mạnh F1/MCC trên cùng test.\\
-\bottomrule
-\end{tabular}}
-\end{table}
+\section{Hạn chế và hướng cải tiến tiếp theo}
 
-Như vậy, kết quả hiện tại cho phép kết luận rằng nhóm đã \textbf{cải thiện pipeline tái hiện của chính mình} trên một số tiêu chí và đã mở rộng việc xử lý mất cân bằng so với cấu hình gốc. Tuy nhiên, chưa nên phát biểu rằng phương pháp đề xuất đã ``vượt tác giả'', vì bài báo không cung cấp đầy đủ kết quả trên cùng tập test giữ nguyên phân bố lớp và cùng giao thức đánh giá để thực hiện phép so sánh đó.
+Dataset 1 nhỏ và chỉ có ít trường hợp stroke trong test, nên kết quả nhạy với split. Dataset 2 có quy mô lớn nhưng là dữ liệu synthetic, do đó các chỉ số rất cao cần được diễn giải thận trọng. Quan trọng hơn đối với mục tiêu tái hiện, bài báo không công bố đủ chi tiết để tái dựng chính xác sampling/evaluation protocol; nhóm vì vậy ưu tiên tính minh bạch và khả năng kiểm chứng của giao thức riêng thay vì điều chỉnh pipeline để ép kết quả gần số công bố.
 
-\section{Giới hạn và hướng cải tiến thuật toán tiếp theo}
-
-Dataset 1 có quy mô nhỏ và số ca đột quỵ ít nên các chỉ số nhạy với cách chia dữ liệu. Dataset 2 là dữ liệu synthetic; do đó, hiệu năng rất cao cần được xác nhận trên dữ liệu thực độc lập. Ngoài ra, các mở rộng hiện tại chủ yếu vẫn nằm ở tầng xử lý mất cân bằng, PCA, tuning và threshold.
-
-Vì vậy, vòng nghiên cứu tiếp theo sẽ giữ cố định split và protocol đã xác lập trong chương này rồi khảo sát một cải tiến ở \textbf{mức thuật toán hoặc hàm mất mát}. Mục tiêu là nâng F1/MCC và giảm false positive mà không đánh đổi quá nhiều Recall. Việc giữ nguyên protocol cho phép xác định liệu cải tiến tiếp theo thực sự đến từ phương pháp mới hay chỉ từ thay đổi cách đánh giá.
+Vòng cải tiến hiện tại chủ yếu nằm ở chiến lược xử lý mất cân bằng, ablation PCA và lựa chọn threshold. Bước tiếp theo sẽ giữ nguyên train/test split và strict protocol hiện tại để khảo sát các cải tiến ở mức thuật toán hoặc hàm mất mát. Một phương án mới chỉ được kết luận tốt hơn baseline khi được đánh giá trên cùng test, cùng metric và cùng lớp mục tiêu. Mục tiêu ưu tiên là nâng F1/MCC, giảm false positive nhưng vẫn duy trì Recall cao và khả năng giải thích của mô hình.
