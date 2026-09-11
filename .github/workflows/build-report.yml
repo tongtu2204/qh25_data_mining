@@ -28,22 +28,44 @@ jobs:
         working-directory: report
         run: |
           set -e
-          # TeX Live on Linux rejects the legacy p-column inside this resizebox;
-          # use a regular column for the build. The whole table is resizeboxed.
-          sed -i 's/{lrrrrrp{4.8cm}}/{lrrrrrr}/' De_xuat.tex
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('De_xuat.tex')
+          s = p.read_text(encoding='utf-8')
+          marker = r'\label{tab:d1_table5_benchmark}'
+          pos = s.index(marker)
+          open_tag = r'\resizebox{\linewidth}{!}{%'
+          start = s.index(open_tag, pos)
+          s = s[:start] + s[start:].replace(open_tag + '\n', '', 1)
+          # This table is small enough at scriptsize without resizebox. Removing the
+          # legacy wrapper avoids a TeX Live portability error while preserving data.
+          tail = s[start:]
+          tail = tail.replace(r'\begin{tabular}{lrrrrrp{4.8cm}}', r'\begin{tabular}{lrrrrrr}', 1)
+          tail = tail.replace(r'\end{tabular}}', r'\end{tabular}', 1)
+          s = s[:start] + tail
+          p.write_text(s, encoding='utf-8')
+          PY
           xelatex -interaction=nonstopmode -halt-on-error main.tex
           xelatex -interaction=nonstopmode -halt-on-error main.tex
           xelatex -interaction=nonstopmode -halt-on-error main.tex
           test -s main.pdf
           pdfinfo main.pdf | grep '^Pages:'
+          pdftotext main.pdf report_text.txt
+          grep -q 'Balanced Random Forest' report_text.txt
+          grep -q 'LightGBM' report_text.txt
+          # Also ensure Poppler can render the final page without a PDF syntax error.
+          pages=$(pdfinfo main.pdf | awk '/^Pages:/ {print $2}')
+          pdftoppm -f "$pages" -singlefile -png -r 72 main.pdf /tmp/report_last >/dev/null 2>&1
+          test -s /tmp/report_last.png
+          rm report_text.txt
 
       - name: Commit rebuilt PDF
         run: |
+          git checkout -- report/De_xuat.tex
           if git diff --quiet -- report/main.pdf; then
             echo 'PDF is unchanged.'
             exit 0
           fi
-          git checkout -- report/De_xuat.tex
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add report/main.pdf
