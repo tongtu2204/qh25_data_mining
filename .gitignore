@@ -41,6 +41,8 @@ results/**/*.joblib
 *.snm
 *.synctex.gz
 *.toc
+*.lof
+*.lot
 *.vrb
 *.xdv
 
