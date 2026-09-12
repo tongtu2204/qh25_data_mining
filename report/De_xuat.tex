@@ -6,7 +6,7 @@ Chương này trình bày phần thực nghiệm độc lập của nhóm theo b
 
 \subsection{Ý nghĩa của các bảng so sánh trong bài báo}
 
-Với Dataset 1, Table 5 của tác giả so sánh ba nhóm kết quả: kết quả tham chiếu từ công trình [21], phương pháp của tác giả khi chưa balancing và phương pháp của tác giả sau balancing. Tuy nhiên, support trong bảng thay đổi rõ rệt: hai cột đầu sử dụng tổng support 1.022, trong khi cột sau balancing có tổng support 1.944 với hai lớp gần cân bằng. Do đó, các chỉ số Precision, Recall và F1 sau balancing không được tính trên cùng phân bố đánh giá với hai cột trước đó.
+Với Dataset 1, Table 5 của tác giả so sánh ba nhóm kết quả: kết quả tham chiếu từ công trình \refcite{21}{21}, phương pháp của tác giả khi chưa balancing và phương pháp của tác giả sau balancing. Tuy nhiên, support trong bảng thay đổi rõ rệt: hai cột đầu sử dụng tổng support 1.022, trong khi cột sau balancing có tổng support 1.944 với hai lớp gần cân bằng. Do đó, các chỉ số Precision, Recall và F1 sau balancing không được tính trên cùng phân bố đánh giá với hai cột trước đó.
 
 Với Dataset 2, Table 7 của tác giả được trình bày như một so sánh giữa mô hình không dùng PCA và mô hình có dùng PCA. Điểm cần lưu ý là support của hai cấu hình không giống nhau: cấu hình without PCA có tổng support 274.354, còn cấu hình with PCA có tổng support 21.218. Về nguyên tắc, PCA chỉ làm giảm số chiều đặc trưng, không tự làm giảm số quan sát. Vì vậy, sự thay đổi support phải đến từ một bước lấy mẫu hoặc một tập đánh giá khác chưa được mô tả đủ chi tiết trong bài báo.
 
@@ -20,8 +20,8 @@ Với Dataset 2, Table 7 của tác giả được trình bày như một so sá
 \toprule
 \textbf{Bảng} & \textbf{Cấu hình} & \textbf{Support lớp 0} & \textbf{Support lớp 1} & \textbf{Tổng} & \textbf{Diễn giải} \\
 \midrule
-Table 5 - D1 & [21] & 960 & 62 & 1.022 & Gần đúng 20\% của Dataset 1, chưa cân bằng test \\
-Table 5 - D1 & Our approach (a) & 960 & 62 & 1.022 & Cùng support với [21], chưa balancing trong tập đánh giá \\
+Table 5 - D1 & \refcite{21}{21} & 960 & 62 & 1.022 & Gần đúng 20\% của Dataset 1, chưa cân bằng test \\
+Table 5 - D1 & Our approach (a) & 960 & 62 & 1.022 & Cùng support với \refcite{21}{21}, chưa balancing trong tập đánh giá \\
 Table 5 - D1 & Our approach (b) & 976 & 968 & 1.944 & Tập đánh giá gần cân bằng; không cùng support với hai cột trước \\
 \midrule
 Table 7 - D2 & Without PCA & 136.758 & 137.596 & 274.354 & Support gần cân bằng do có bước sampling trước đó \\
@@ -137,9 +137,9 @@ Weighted avg & 0,9451 & 0,7818 & 0,8421 & 1.022\\
 
 So với baseline không balancing, Recall của lớp stroke tăng từ 0,0600 lên 0,7800. Tuy nhiên Precision chỉ đạt 0,1554 do số false positive lớn. Điều này phản ánh bản chất của bài toán mất cân bằng: tăng khả năng bắt ca stroke thường làm giảm độ chính xác trong các cảnh báo dương tính.
 
-\subsubsection{Đối chiếu với [21] và hai cấu hình trong Table 5}
+\subsubsection{Đối chiếu với \refcite{21}{21} và hai cấu hình trong Table 5}
 
-Để làm rõ ý nghĩa của kết quả tái hiện, Bảng~\ref{tab:d1_table5_benchmark} đặt kết quả [21], hai cấu hình (a), (b) của tác giả, pipeline tái hiện và phương án cải tiến của nhóm cạnh nhau. Cột support được giữ trong bảng vì đây là thông tin quyết định việc các metric có thể được so sánh trực tiếp hay chỉ mang tính tham khảo.
+Để làm rõ ý nghĩa của kết quả tái hiện, Bảng~\ref{tab:d1_table5_benchmark} đặt kết quả \refcite{21}{21}, hai cấu hình (a), (b) của tác giả, pipeline tái hiện và phương án cải tiến của nhóm cạnh nhau. Cột support được giữ trong bảng vì đây là thông tin quyết định việc các metric có thể được so sánh trực tiếp hay chỉ mang tính tham khảo.
 
 \begin{table}[H]
 \centering
@@ -151,16 +151,16 @@ So với baseline không balancing, Recall của lớp stroke tăng từ 0,0600 
 \toprule
 \textbf{Phương án} & \textbf{Accuracy} & \textbf{Precision (1)} & \textbf{Recall (1)} & \textbf{F1 (1)} & \textbf{Support} & \textbf{Diễn giải}\\
 \midrule
-[21] & 0,85 & 0,21 & 0,52 & 0,29 & 960/62 & Mốc tham chiếu trên test mất cân bằng, tổng 1.022 mẫu\\
-Tác giả (a) & 0,92 & 0,24 & 0,15 & 0,18 & 960/62 & Accuracy/Precision cao hơn [21] nhưng Recall và F1 giảm mạnh\\
+\refcite{21}{21} & 0,85 & 0,21 & 0,52 & 0,29 & 960/62 & Mốc tham chiếu trên test mất cân bằng, tổng 1.022 mẫu\\
+Tác giả (a) & 0,92 & 0,24 & 0,15 & 0,18 & 960/62 & Accuracy/Precision cao hơn \refcite{21}{21} nhưng Recall và F1 giảm mạnh\\
 Tác giả (b) & 0,95 & 0,93 & 0,96 & 0,95 & 976/968 & Support đổi sang gần 50:50; không so trực tiếp với các cột test mất cân bằng\\
-Nhóm -- tái hiện & 0,7818 & 0,1554 & \textbf{0,7800} & 0,2591 & 972/50 & Recall cao hơn [21] và (a), đổi lại Accuracy/Precision thấp hơn\\
-Nhóm -- cải tiến & 0,8434 & 0,1944 & \textbf{0,7000} & \textbf{0,3043} & 972/50 & F1 cao hơn [21] và (a), Recall cao hơn rõ rệt; Accuracy gần [21]\\
+Nhóm -- tái hiện & 0,7818 & 0,1554 & \textbf{0,7800} & 0,2591 & 972/50 & Recall cao hơn \refcite{21}{21} và (a), đổi lại Accuracy/Precision thấp hơn\\
+Nhóm -- cải tiến & 0,8434 & 0,1944 & \textbf{0,7000} & \textbf{0,3043} & 972/50 & F1 cao hơn \refcite{21}{21} và (a), Recall cao hơn rõ rệt; Accuracy gần \refcite{21}{21}\\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-So với [21], pipeline tái hiện của nhóm chưa cao hơn ở mọi chỉ số: Accuracy giảm từ 0,85 xuống 0,7818, Precision giảm từ 0,21 xuống 0,1554 và F1 giảm nhẹ từ 0,29 xuống 0,2591; ngược lại Recall tăng đáng kể từ 0,52 lên 0,78. Khi chuyển sang phương án cải tiến, F1 đạt 0,3043, cao hơn mức 0,29 của [21], đồng thời Recall vẫn đạt 0,70, cao hơn 0,52. Accuracy 0,8434 gần mức 0,85 của [21] và Precision 0,1944 thấp hơn nhẹ mức 0,21. Vì vậy, kết quả cải tiến có thể được diễn giải là \textbf{cân bằng phát hiện lớp stroke tốt hơn [21] về Recall và F1, với một đánh đổi nhỏ ở Accuracy và Precision}; tuy nhiên đây vẫn là đối chiếu tham khảo vì exact test samples không hoàn toàn giống nhau.
+So với \refcite{21}{21}, pipeline tái hiện của nhóm chưa cao hơn ở mọi chỉ số: Accuracy giảm từ 0,85 xuống 0,7818, Precision giảm từ 0,21 xuống 0,1554 và F1 giảm nhẹ từ 0,29 xuống 0,2591; ngược lại Recall tăng đáng kể từ 0,52 lên 0,78. Khi chuyển sang phương án cải tiến, F1 đạt 0,3043, cao hơn mức 0,29 của \refcite{21}{21}, đồng thời Recall vẫn đạt 0,70, cao hơn 0,52. Accuracy 0,8434 gần mức 0,85 của \refcite{21}{21} và Precision 0,1944 thấp hơn nhẹ mức 0,21. Vì vậy, kết quả cải tiến có thể được diễn giải là \textbf{cân bằng phát hiện lớp stroke tốt hơn \refcite{21}{21} về Recall và F1, với một đánh đổi nhỏ ở Accuracy và Precision}; tuy nhiên đây vẫn là đối chiếu tham khảo vì exact test samples không hoàn toàn giống nhau.
 
 So với cột (a) của tác giả, sự đánh đổi còn rõ hơn: cột (a) đạt Accuracy 0,92 và Precision 0,24 nhưng Recall chỉ 0,15 và F1 0,18. Phương án cải tiến của nhóm giảm Accuracy/Precision nhưng tăng Recall lên 0,70 và F1 lên 0,3043. Cột (b) không được dùng để kết luận hơn/kém trực tiếp vì support đã thay đổi từ 1.022 mẫu mất cân bằng sang 1.944 mẫu gần cân bằng.
 
