@@ -1,5 +1,5 @@
 \chapter{KẾT QUẢ}
-Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu: Dataset 1 [31] và Dataset 2 [32]. Dataset 1 gồm 5.110 bản ghi duy nhất với các đặc trưng: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân (đã kết hôn/chưa kết hôn), loại công việc, nơi cư trú, mức glucose máu, chỉ số khối cơ thể (BMI), tình trạng hút thuốc và thông tin đột quỵ. Trong tổng số bản ghi, 249 trường hợp dương tính với đột quỵ, cho thấy dữ liệu mất cân bằng đáng kể. Để phân tích phân bố quan sát ở từng biến phân loại, các biểu đồ cột được xây dựng; ví dụ với biến ``gender'', số quan sát của từng nhóm (nam, nữ, khác) được hiển thị. Dataset 2 gồm 5.769.190 bản ghi và có các thuộc tính tương tự: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân, loại công việc, nơi cư trú, glucose máu, BMI, tình trạng hút thuốc và chẩn đoán. Cả hai tập được loại bản ghi trùng và kiểm tra giá trị thiếu; missing được điền ở tập thứ nhất và loại bỏ ở tập thứ hai. Ngoại lệ của các thuộc tính số được kiểm tra cùng với cân bằng lớp. Ở Dataset 1, nơi số ca dương tính (lớp thiểu số) nhỏ, SMOTE được áp dụng để tạo các mẫu tổng hợp bằng nội suy giữa các mẫu lớp thiểu số hiện có. Cách tiếp cận này giúp giảm mất cân bằng lớp và giảm thiên lệch về lớp đa số. Ở Dataset 2, nơi lớp đa số có nhiều mẫu hơn và toàn bộ tập dữ liệu rất lớn, random undersampling được sử dụng. Thay vì sinh dữ liệu nhân tạo, chúng tôi giảm lớp đa số xuống bằng kích thước lớp thiểu số, vì bổ sung mẫu nhân tạo không phải lúc nào cũng phản ánh dữ liệu thực tế. Điều này giúp mô hình không overfit vào lớp đa số và cải thiện hiệu năng trên lớp thiểu số.
+Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu: Dataset 1 \refcite{31}{31} và Dataset 2 \refcite{32}{32}. Dataset 1 gồm 5.110 bản ghi duy nhất với các đặc trưng: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân (đã kết hôn/chưa kết hôn), loại công việc, nơi cư trú, mức glucose máu, chỉ số khối cơ thể (BMI), tình trạng hút thuốc và thông tin đột quỵ. Trong tổng số bản ghi, 249 trường hợp dương tính với đột quỵ, cho thấy dữ liệu mất cân bằng đáng kể. Để phân tích phân bố quan sát ở từng biến phân loại, các biểu đồ cột được xây dựng; ví dụ với biến ``gender'', số quan sát của từng nhóm (nam, nữ, khác) được hiển thị. Dataset 2 gồm 5.769.190 bản ghi và có các thuộc tính tương tự: id, giới tính, tuổi, tăng huyết áp, bệnh tim mạch, tình trạng hôn nhân, loại công việc, nơi cư trú, glucose máu, BMI, tình trạng hút thuốc và chẩn đoán. Cả hai tập được loại bản ghi trùng và kiểm tra giá trị thiếu; missing được điền ở tập thứ nhất và loại bỏ ở tập thứ hai. Ngoại lệ của các thuộc tính số được kiểm tra cùng với cân bằng lớp. Ở Dataset 1, nơi số ca dương tính (lớp thiểu số) nhỏ, SMOTE được áp dụng để tạo các mẫu tổng hợp bằng nội suy giữa các mẫu lớp thiểu số hiện có. Cách tiếp cận này giúp giảm mất cân bằng lớp và giảm thiên lệch về lớp đa số. Ở Dataset 2, nơi lớp đa số có nhiều mẫu hơn và toàn bộ tập dữ liệu rất lớn, random undersampling được sử dụng. Thay vì sinh dữ liệu nhân tạo, chúng tôi giảm lớp đa số xuống bằng kích thước lớp thiểu số, vì bổ sung mẫu nhân tạo không phải lúc nào cũng phản ánh dữ liệu thực tế. Điều này giúp mô hình không overfit vào lớp đa số và cải thiện hiệu năng trên lớp thiểu số.
 
 Bảng~\ref{tab:jacobi1} trình bày kết quả tìm trị riêng và vector riêng bằng thuật toán quay Jacobi cho Dataset 1. Để tăng hiệu quả tính toán, tính toán song song bằng OpenMP được sử dụng. Ngoài ra, nghiên cứu giảm chiều dữ liệu bằng PCA, giúp giải thích 95\% phương sai của dữ liệu.
 
@@ -64,7 +64,7 @@ Biểu đồ Beeswarm (Hình~\ref{fig:bee1}) là một cách hiển thị giá t
 
 \paperfig[0.82\linewidth]{figures_original/fig-013.jpg}{SHAP Beeswarm (Dataset 1).\label{fig:bee1}}
 
-Bảng~\ref{tab:time} cho thấy thời gian thực thi các giai đoạn khác nhau của thuật toán đề xuất và so sánh với kết quả của các tác giả trong [21].
+Bảng~\ref{tab:time} cho thấy thời gian thực thi các giai đoạn khác nhau của thuật toán đề xuất và so sánh với kết quả của các tác giả trong \refcite{21}{21}.
 
 \begin{table}[H]
 \centering
@@ -77,12 +77,12 @@ Tìm trị riêng và vector riêng & $6.25\times 10^{-5}$\\
 Tính ma trận hiệp phương sai & 0.00260\\
 Huấn luyện mô hình & 1.34685\\
 Tổng thời gian thực thi & 1.50010\\
-Tổng thời gian của thuật toán trong [21] & 4.52611\\
+Tổng thời gian của thuật toán trong \refcite{21}{21} & 4.52611\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Như có thể thấy từ Bảng~\ref{tab:compare1}, tốc độ nhanh hơn hơn 3 lần so với [21]. Trong nghiên cứu này, chúng tôi chia dữ liệu thành 80\% để huấn luyện mô hình và 20\% để kiểm thử. Sau đó, chúng tôi so sánh các chỉ số định lượng khác về lợi ích đạt được (xem Bảng~\ref{tab:compare1}). Ở đây, phương pháp của chúng tôi a) là kết quả không cân bằng lớp và b) là kết quả có cân bằng lớp.
+Như có thể thấy từ Bảng~\ref{tab:compare1}, tốc độ nhanh hơn hơn 3 lần so với \refcite{21}{21}. Trong nghiên cứu này, chúng tôi chia dữ liệu thành 80\% để huấn luyện mô hình và 20\% để kiểm thử. Sau đó, chúng tôi so sánh các chỉ số định lượng khác về lợi ích đạt được (xem Bảng~\ref{tab:compare1}). Ở đây, phương pháp của chúng tôi a) là kết quả không cân bằng lớp và b) là kết quả có cân bằng lớp.
 
 \begin{table}[H]
 \centering
@@ -92,7 +92,7 @@ Như có thể thấy từ Bảng~\ref{tab:compare1}, tốc độ nhanh hơn hơ
 \toprule
 & \multicolumn{3}{c}{\textbf{Precision}} & \multicolumn{3}{c}{\textbf{Recall}} & \multicolumn{3}{c}{\textbf{F1-score}} & \multicolumn{3}{c}{\textbf{Support}}\\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}
-& [21] & a) & b) & [21] & a) & b) & [21] & a) & b) & [21] & a) & b)\\
+& \refcite{21}{21} & a) & b) & \refcite{21}{21} & a) & b) & \refcite{21}{21} & a) & b) & \refcite{21}{21} & a) & b)\\
 \midrule
 0 & 0.97 & 0.95 & 0.96 & 0.87 & 0.97 & 0.93 & 0.92 & 0.96 & 0.94 & 960 & 960 & 976\\
 1 & 0.21 & 0.24 & 0.93 & 0.52 & 0.15 & 0.96 & 0.29 & 0.18 & 0.95 & 62 & 62 & 968\\
@@ -105,7 +105,7 @@ weighted avg & 0.92 & 0.90 & 0.95 & 0.85 & 0.92 & 0.95 & 0.88 & 0.92 & 0.95 & 10
 
 Hiệu năng của mô hình đề xuất được đánh giá toàn diện trên Dataset 1. Ma trận nhầm lẫn (Hình~\ref{fig:cm1}), đường cong ROC-AUC (Hình~\ref{fig:roc1}) và kết quả kiểm định chéo 10 fold (Bảng~\ref{tab:cv1}) cung cấp cái nhìn chi tiết về độ chính xác phân loại và độ vững của phương pháp.
 
-Kết quả được thu trong môi trường Google Colab (bộ xử lý Intel(R) Xeon(R) CPU @ 2.20 GHz). Trong môi trường này, chúng tôi đạt độ chính xác 95\%, vượt kết quả được báo cáo trong [21]. Việc tăng độ chính xác đạt được đồng thời với giảm thời gian thực thi nhờ giảm chiều dữ liệu.
+Kết quả được thu trong môi trường Google Colab (bộ xử lý Intel(R) Xeon(R) CPU @ 2.20 GHz). Trong môi trường này, chúng tôi đạt độ chính xác 95\%, vượt kết quả được báo cáo trong \refcite{21}{21}. Việc tăng độ chính xác đạt được đồng thời với giảm thời gian thực thi nhờ giảm chiều dữ liệu.
 
 \paperfig[0.64\linewidth]{figures_original/fig-014.jpg}{Ma trận nhầm lẫn (Dataset 1).\label{fig:cm1}}
 \paperfig[0.76\linewidth]{figures_original/fig-015.jpg}{Đường cong ROC-AUC (Dataset 1).\label{fig:roc1}}
