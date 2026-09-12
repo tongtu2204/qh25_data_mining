@@ -9,7 +9,7 @@ Dưới đây chúng tôi mô tả phương pháp đề xuất.
 
 Trước khi xử lý dữ liệu, kiểm tra bản ghi trùng được thực hiện nhằm bảo đảm tính duy nhất của tập dữ liệu và tránh làm sai lệch kết quả mô hình do các mẫu lặp, nhưng không tìm thấy bản ghi trùng. Các giá trị thiếu được khảo sát và chỉ xuất hiện ở cột BMI, sau đó được điền bằng giá trị trung bình. Cách này ngăn mô hình bị ảnh hưởng bởi dữ liệu không đầy đủ, bởi missing có thể gây thiên lệch và kết luận không chính xác nếu không được xử lý phù hợp. Việc điền giá trị trung bình giúp duy trì phân bố của cột và tính nhất quán của dữ liệu. Ngoài ra, kiểm tra ngoại lệ được thực hiện bằng các phương pháp trực quan như boxplot, cùng với phương pháp khoảng tứ phân vị (IQR). Các giá trị nằm ngoài 1,5 lần IQR tính từ các tứ phân vị được xác định là bất thường và được thay bằng giá trị biên tương ứng. Những điều chỉnh này được thực hiện để bảo đảm tính nhất quán của dữ liệu và ngăn các bất thường làm sai lệch kết quả mô hình.
 
-Phân tích dữ liệu khám phá (EDA) [28] được sử dụng để phân tích sơ bộ và xác định các vấn đề tiềm ẩn, chẳng hạn mất cân bằng lớp và dữ liệu thiếu, có thể ảnh hưởng tiêu cực đến mô hình.
+Phân tích dữ liệu khám phá (EDA) \refcite{28}{28} được sử dụng để phân tích sơ bộ và xác định các vấn đề tiềm ẩn, chẳng hạn mất cân bằng lớp và dữ liệu thiếu, có thể ảnh hưởng tiêu cực đến mô hình.
 
 Dữ liệu được tâm hóa bằng cách xây dựng ma trận
 \[
@@ -50,10 +50,10 @@ là hàm mất mát logistic, $\hat y_i(\theta)$ là dự báo của mô hình, 
 Các phương pháp cân bằng sau được sử dụng:
 \begin{itemize}
   \item Undersampling để giảm số lượng mẫu của lớp chiếm ưu thế.
-  \item Oversampling bằng SMOTE (Synthetic Minority Over-sampling Technique) [29] để sinh các mẫu tổng hợp cho lớp ít đại diện hơn.
+  \item Oversampling bằng SMOTE (Synthetic Minority Over-sampling Technique) \refcite{29}{29} để sinh các mẫu tổng hợp cho lớp ít đại diện hơn.
 \end{itemize}
 
-Để diễn giải dự báo của mô hình, chúng tôi sử dụng phương pháp SHAP [30], ước lượng đóng góp của từng đặc trưng $j$ vào dự báo của từng mẫu $i$:
+Để diễn giải dự báo của mô hình, chúng tôi sử dụng phương pháp SHAP \refcite{30}{30}, ước lượng đóng góp của từng đặc trưng $j$ vào dự báo của từng mẫu $i$:
 \[
 \operatorname{SHAP}_{j}(x_i)=\phi_j(x_i),
 \]
