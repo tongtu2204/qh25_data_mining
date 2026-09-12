@@ -32,7 +32,6 @@
 % Citation số trong thân bài -> anchor tài liệu tham khảo.
 % #1: chuỗi hiển thị (vd. 1--3); #2: mục đầu tiên cần nhảy tới (vd. 1).
 \newcommand{\refcite}[2]{\hyperlink{bib:#2}{[#1]}}
-\newcounter{bibanchor}
 
 % ==================== Khổ trang / typography ====================
 % Giữ template chính của nhánh linh: Times New Roman 13pt, lề trái 3.5cm,
@@ -181,12 +180,6 @@
 % ==================== TÀI LIỆU THAM KHẢO ====================
 \chapter*{TÀI LIỆU THAM KHẢO}
 \addcontentsline{toc}{chapter}{TÀI LIỆU THAM KHẢO}
-% Tạo anchor bib:1, bib:2, ... tự động cho mỗi \item mà không đổi numbering hiện tại.
-\begingroup
-\setcounter{bibanchor}{0}
-\let\referenceitem\item
-\renewcommand{\item}{\stepcounter{bibanchor}\hypertarget{bib:\arabic{bibanchor}}{}\referenceitem}
 \input{TaiLieuThamKhao.tex}
-\endgroup
 
 \end{document}
