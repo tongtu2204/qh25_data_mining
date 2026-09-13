@@ -13,8 +13,9 @@
 \chapter*{GIỚI THIỆU BÁO CÁO}
 \addcontentsline{toc}{chapter}{GIỚI THIỆU BÁO CÁO}
 Báo cáo này được thực hiện trong khuôn khổ học phần Khai phá dữ liệu, với
-mục tiêu tìm hiểu và trình bày lại một công trình nghiên cứu ứng dụng học máy
-trong lĩnh vực y tế --- cụ thể là bài toán dự đoán nguy cơ đột quỵ.
+mục tiêu tìm hiểu và trình bày lại một công trình nghiên cứu ứng dụng học máy, chúng tôi sẽ thực hiện tái hiện bài nghiên cứu và để xuất các điểm có thể tối ưu hoặc cái tiến của bài báo gốc. Lưu ý rằng từ Chương 1 đến hết Chương 4, nội dung báo cáo chủ yếu là phần dịch và
+trình bày lại bài báo gốc. Do đó, đại từ \textit{``chúng tôi''} trong
+các chương này được giữ theo nguyên bản và dùng để chỉ nhóm tác giả của bài báo gốc. Từ Chương 5 trở đi, đại từ ``chúng tôi'' dùng để chỉ nhóm học viên thực hiện báo cáo này.
 
 \medskip
 
@@ -32,11 +33,7 @@ giữa lý thuyết khai phá dữ liệu và một ứng dụng có ý nghĩa t
 \textbf{Mục tiêu của báo cáo:}
 
 \begin{itemize}
-  \item Trình bày lại có hệ thống nội dung bài báo gốc bằng tiếng Việt,
-  bám sát cấu trúc: bối cảnh -- phương pháp -- kết quả -- thảo luận -- kết luận.
-  \item Diễn giải các công thức và thuật toán then chốt (PCA bằng phép quay
-  Jacobi song song hóa OpenMP, hàm mục tiêu XGBoost, phương pháp SHAP) theo
-  cách dễ tiếp cận.
+  \item Trình bày lại có hệ thống nội dung bài báo gốc bằng tiếng Việt.
   \item Tự xây dựng và chạy lại pipeline thực nghiệm nhằm tái lập các kết quả
   mà tác giả công bố trên hai bộ dữ liệu.
   \item Đối chiếu có kiểm soát giữa kết quả tác giả và kết quả tái hiện của nhóm,
@@ -44,10 +41,3 @@ giữa lý thuyết khai phá dữ liệu và một ứng dụng có ý nghĩa t
   \item Sau khi thiết lập được baseline tái hiện phù hợp, khảo sát các hướng cải tiến
   và đánh giá liệu chúng có tạo ra lợi ích thực nghiệm so với phương pháp của tác giả hay không.
 \end{itemize}
-
-\noindent
-\textbf{Phạm vi báo cáo:} báo cáo phân biệt rõ ba lớp nội dung: (i) nội dung và
-kết quả được công bố trong bài báo gốc; (ii) kết quả tái hiện độc lập của nhóm;
-và (iii) các thử nghiệm cải tiến do nhóm đề xuất. Các kết quả của nhóm được ghi
-rõ nguồn thực nghiệm và chỉ được so sánh trực tiếp với tác giả khi sử dụng cùng
-định nghĩa chỉ số và giao thức đánh giá tương ứng.

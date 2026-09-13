@@ -18,25 +18,29 @@
 \usepackage{booktabs,longtable,array,tabularx,multirow}
 \usepackage{float}
 \usepackage{placeins}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{enumitem}
 \usepackage{caption}
 \usepackage{url}
-%\usepackage{xurl}
+\usepackage{xurl}
 \usepackage{hyperref}
+\urlstyle{rm}
+\renewcommand{\UrlFont}{\rmfamily}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{fancybox}
 \usepackage{indentfirst}
 
-% Citation số trong thân bài -> anchor tài liệu tham khảo.
-% Dùng dạng robust để an toàn khi citation xuất hiện trong heading/bookmark.
-% #1: chuỗi hiển thị (vd. 1--3); #2: mục đầu tiên cần nhảy tới (vd. 1).
 \DeclareRobustCommand{\refcite}[2]{\texorpdfstring{\hyperlink{bib:#2}{[#1]}}{[#1]}}
 
+% ==================== Thiết lập bảng ====================
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{3pt}
+\setlength{\arrayrulewidth}{0.4pt}
+
+
 % ==================== Khổ trang / typography ====================
-% Giữ template chính của nhánh linh: Times New Roman 13pt, lề trái 3.5cm,
-% phải 2cm, trên/dưới 2cm, giãn dòng 1.30.
 \usepackage[left=3.5cm,right=2cm,top=2.0cm,bottom=2.0cm]{geometry}
 \setlength{\parindent}{1.2cm}
 \setlength{\parskip}{0pt}
@@ -87,11 +91,15 @@
 % ==================== Thông tin bìa ====================
 \newcommand{\UniversityName}{ĐẠI HỌC QUỐC GIA HÀ NỘI}
 \newcommand{\SchoolName}{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}
-\newcommand{\StudentNameA}{TỐNG VIỆT TÚ - Mã học viên: 25007845}
-\newcommand{\StudentNameB}{NGUYỄN THỊ NHẬT LINH - Mã học viên: 25007871}
-\newcommand{\CourseName}{HỌC MÁY VÀ KHAI PHÁ DỮ LIỆU}
-\newcommand{\SupervisorName}{TRẦN TRỌNG HIẾU}
-\newcommand{\ReportYear}{09/2026}
+
+\newcommand{\UniversityLogo}{figures_original/hus.jpg}
+
+\newcommand{\Major}{THẠC SĨ KHOA HỌC DỮ LIỆU - QH2025}
+\newcommand{\CourseName}{KHAI PHÁ DỮ LIỆU VÀ HỌC MÁY}
+\newcommand{\SupervisorName}{PGS.TS.TRẦN TRỌNG HIẾU}
+\newcommand{\StudentNameA}{TỐNG VIỆT TÚ - 25007845}
+\newcommand{\StudentNameB}{NGUYỄN THỊ NHẬT LINH - 25007871}
+\newcommand{\ReportYear}{08/2026}
 \newcommand{\ReportTitle}{CẢI THIỆN DỰ ĐOÁN NGUY CƠ ĐỘT QUỴ BẰNG CÁCH TÍCH HỢP XGBOOST, PHÂN TÍCH THÀNH PHẦN CHÍNH TỐI ƯU VÀ TRÍ TUỆ NHÂN TẠO GIẢI THÍCH ĐƯỢC}
 
 \newcommand{\paperfig}[3][0.82\linewidth]{%
@@ -108,15 +116,24 @@
 \thispagestyle{empty}
 \thisfancypage{\setlength{\fboxrule}{2pt}\doublebox}{}
 \begin{center}
-  \vspace*{0.03cm}
-  {\fontsize{15}{18}\selectfont \UniversityName\\}
-  {\fontsize{15}{18}\selectfont\bfseries \SchoolName\\}
-  \vspace*{4cm}
-  {\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
-  \vspace*{4cm}
+	\vspace*{0.03cm}
+	
+	{\fontsize{15}{18}\selectfont \UniversityName\\}
+	{\fontsize{15}{18}\selectfont\bfseries \SchoolName\par}
+	
+	\vspace*{0.8cm}
+	
+	\includegraphics[width=3.2cm]{\UniversityLogo}
+	
+	\vspace*{2.5cm}
+	
+	{\fontsize{16}{21}\selectfont\bfseries \ReportTitle\par}
+	
+	\vspace*{4cm}
 \end{center}
 \noindent\hspace*{2.7cm}\parbox{12cm}{
   \fontsize{13}{18}\selectfont
+  \textbf{Ngành:} \Major\\[0.4cm]
   \textbf{Học phần:} \CourseName\\[0.4cm]
   \textbf{Giảng viên hướng dẫn:} \SupervisorName\\[0.4cm]
   \textbf{Học viên thực hiện:}\\
@@ -125,7 +142,7 @@
 }
 \vfill
 \begin{center}
-  {\fontsize{15}{18}\selectfont\bfseries HÀ NỘI -- \ReportYear}
+  {\fontsize{15}{18}\selectfont\bfseries Hà Nội -- \ReportYear}
 \end{center}
 \end{titlepage}
 
@@ -151,6 +168,9 @@
 \addcontentsline{toc}{chapter}{DANH MỤC BẢNG BIỂU}
 \listoftables
 \clearpage
+
+
+
 
 % ==================== NỘI DUNG CHÍNH ====================
 \mainmatter

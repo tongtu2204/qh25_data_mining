@@ -10,7 +10,12 @@ Các chỉ số báo cáo gồm Accuracy, Precision, Recall, F1, MCC và ROC-AUC
 
 \subsection{Dataset 1: so sánh các họ mô hình mới}
 
-CatBoost được huấn luyện trực tiếp trên các biến phân loại nguyên bản với \texttt{auto\_class\_weights=Balanced}, không One-Hot Encoding, PCA hay SMOTE. LightGBM giữ toàn bộ training set và dùng \texttt{scale\_pos\_weight}. Balanced Random Forest tạo các mẫu cân bằng bên trong quá trình xây dựng cây. EasyEnsemble và Focal-loss XGBoost được dùng như các thí nghiệm sàng lọc bổ sung cho bài toán mất cân bằng.
+CatBoost được huấn luyện trực tiếp trên các biến phân loại nguyên bản
+với tham số \texttt{auto\_class\_weights}, không sử dụng One-Hot Encoding, PCA hay SMOTE.
+LightGBM giữ toàn bộ tập huấn luyện và sử dụng tham số
+\texttt{scale\_pos\_weight}. Balanced Random Forest tạo các mẫu cân bằng
+bên trong quá trình xây dựng cây. EasyEnsemble và Focal-loss XGBoost
+được sử dụng như các thí nghiệm sàng lọc bổ sung cho bài toán mất cân bằng.
 
 \begin{table}[H]
 \centering
@@ -40,7 +45,15 @@ $^{*}$EasyEnsemble sử dụng cấu hình giới hạn tài nguyên tính toán
 
 \subsection{Dataset 2: class weighting so với data-level balancing}
 
-Dataset 2 sau làm sạch có 5.542.261 quan sát; outer-training set gồm 4.433.808 và outer-test set gồm 1.108.453 mẫu. LightGBM được chạy trên toàn bộ outer-training set, không undersampling hay SMOTE; mất cân bằng được xử lý bằng \texttt{scale\_pos\_weight}. Kết quả được so sánh với cấu hình XGBoost + undersampling + PCA tốt nhất ở Experiment 13.
+Dataset 2 sau khi làm sạch có 5.542.261 quan sát. Tập huấn luyện ngoài
+(\textit{outer-training set}) gồm 4.433.808 mẫu, trong khi tập kiểm tra
+ngoài (\textit{outer-test set}) gồm 1.108.453 mẫu. LightGBM được huấn
+luyện trên toàn bộ \textit{outer-training set}, không sử dụng
+undersampling hoặc SMOTE.
+
+Tình trạng mất cân bằng được xử lý bằng tham số
+\texttt{scale\_pos\_weight}. Kết quả thu được được so sánh với cấu hình
+XGBoost kết hợp undersampling và PCA tốt nhất trong Experiment 13.
 
 \begin{table}[H]
 \centering

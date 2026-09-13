@@ -1,31 +1,31 @@
 \chapter{TÁI HIỆN KẾT QUẢ VÀ ĐỊNH HƯỚNG CẢI TIẾN}
 
-Chương này trình bày phần thực nghiệm độc lập của nhóm theo ba tầng tách biệt: \textbf{đọc lại kết quả công bố của tác giả}, \textbf{tái hiện trên giao thức đánh giá minh bạch} và \textbf{mở rộng/cải tiến trên cùng tập kiểm tra}. Cách tách này giúp tránh diễn giải sai khi các bảng trong bài báo có thay đổi đáng kể về \textit{support} sau các bước xử lý mất cân bằng.
+Chương này trình bày phần thực nghiệm độc lập của nhóm theo ba tầng tách biệt: \textbf{Bàn luận về công bố của tác giả}, \textbf{tái hiện thí nghiệm} và \textbf{mở rộng/cải tiến trên cùng tập kiểm tra}.
 
-\section{Đọc lại giao thức và kết quả công bố của tác giả}
+\section{Bàn luận về công bố của tác giả}
 
 \subsection{Ý nghĩa của các bảng so sánh trong bài báo}
 
-Với Dataset 1, Table 5 của tác giả so sánh ba nhóm kết quả: kết quả tham chiếu từ công trình \refcite{21}{21}, phương pháp của tác giả khi chưa balancing và phương pháp của tác giả sau balancing. Tuy nhiên, support trong bảng thay đổi rõ rệt: hai cột đầu sử dụng tổng support 1.022, trong khi cột sau balancing có tổng support 1.944 với hai lớp gần cân bằng. Do đó, các chỉ số Precision, Recall và F1 sau balancing không được tính trên cùng phân bố đánh giá với hai cột trước đó.
+Với Dataset 1, Bảng~\ref{tab:compare1} của tác giả so sánh ba nhóm kết quả: kết quả tham chiếu từ công trình \refcite{21}{21}, phương pháp của tác giả khi chưa balancing và phương pháp của tác giả sau balancing. Tuy nhiên, support trong bảng thay đổi rõ rệt: hai cột đầu sử dụng tổng support 1.022, trong khi cột sau balancing có tổng support 1.944 với hai lớp gần cân bằng. Do đó, các chỉ số Precision, Recall và F1 sau balancing không được tính trên cùng phân bố đánh giá với hai cột trước đó.
 
-Với Dataset 2, Table 7 của tác giả được trình bày như một so sánh giữa mô hình không dùng PCA và mô hình có dùng PCA. Điểm cần lưu ý là support của hai cấu hình không giống nhau: cấu hình without PCA có tổng support 274.354, còn cấu hình with PCA có tổng support 21.218. Về nguyên tắc, PCA chỉ làm giảm số chiều đặc trưng, không tự làm giảm số quan sát. Vì vậy, sự thay đổi support phải đến từ một bước lấy mẫu hoặc một tập đánh giá khác chưa được mô tả đủ chi tiết trong bài báo.
+Với Dataset 2, Bảng~\ref{tab:d2pca} của tác giả được trình bày như một so sánh giữa mô hình không dùng PCA và mô hình có dùng PCA. Điểm cần lưu ý là support của hai cấu hình không giống nhau: cấu hình without PCA có tổng support 274.354, còn cấu hình with PCA có tổng support 21.218. Về nguyên tắc, PCA chỉ làm giảm số chiều đặc trưng, không tự làm giảm số quan sát. Vì vậy, sự thay đổi support phải đến từ một bước lấy mẫu hoặc một tập đánh giá khác chưa được mô tả đủ chi tiết trong bài báo.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Đọc lại support trong Table 5 và Table 7 của tác giả}
+\caption{Kết quả của tác giả}
 \label{tab:paper_support_reading}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrp{6.0cm}}
 \toprule
 \textbf{Bảng} & \textbf{Cấu hình} & \textbf{Support lớp 0} & \textbf{Support lớp 1} & \textbf{Tổng} & \textbf{Diễn giải} \\
 \midrule
-Table 5 - D1 & \refcite{21}{21} & 960 & 62 & 1.022 & Gần đúng 20\% của Dataset 1, chưa cân bằng test \\
-Table 5 - D1 & Our approach (a) & 960 & 62 & 1.022 & Cùng support với \refcite{21}{21}, chưa balancing trong tập đánh giá \\
-Table 5 - D1 & Our approach (b) & 976 & 968 & 1.944 & Tập đánh giá gần cân bằng; không cùng support với hai cột trước \\
+Bảng~\ref{tab:compare1} - D1 & \refcite{21}{21} & 960 & 62 & 1.022 & 20\% của Dataset 1, chưa cân bằng test \\
+Bảng~\ref{tab:compare1} - D1 & (a) & 960 & 62 & 1.022 & Cùng support với \refcite{21}{21}, chưa balancing \\
+Bảng~\ref{tab:compare1} - D1 & (b) & 976 & 968 & 1.944 & Không cùng support 20\% mẫu khi balancing \\
 \midrule
-Table 7 - D2 & Without PCA & 136.758 & 137.596 & 274.354 & Support gần cân bằng do có bước sampling trước đó \\
-Table 7 - D2 & With PCA & 10.613 & 10.605 & 21.218 & Support thay đổi mạnh; PCA không giải thích được việc giảm số dòng \\
+Bảng~\ref{tab:d2pca} - D2 & Without PCA & 136.758 & 137.596 & 274.354 & Support gần cân bằng do có bước sampling trước đó \\
+Bảng~\ref{tab:d2pca} - D2 & With PCA & 10.613 & 10.605 & 21.218 & Support thay đổi mạnh; PCA không giải thích được việc giảm số dòng \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -55,11 +55,11 @@ Tập tính classification report & Không ổn định & Support trong các b�
 \end{tabular}
 \end{table}
 
-\section{Giao thức tái hiện của nhóm}
+\section{Phương thức tái hiện của nhóm}
 
 \subsection{Nguyên tắc đánh giá}
 
-Để các thí nghiệm có thể so sánh công bằng, nhóm sử dụng một giao thức nghiêm ngặt và minh bạch hơn: dữ liệu được chia train/test trước; mọi bước imputation, encoding, scaling, PCA và balancing chỉ được fit trên train; test set không được resample; tất cả cấu hình được đánh giá trên cùng test split. Như vậy, khi so sánh các mô hình của nhóm với nhau, khác biệt về chỉ số phản ánh khác biệt mô hình thay vì khác biệt về tập đánh giá.
+Để các thí nghiệm có thể so sánh công bằng, nhóm sử dụng một phương thức: dữ liệu được chia train/test trước; mọi bước imputation, encoding, scaling, PCA và balancing chỉ được fit trên train; test set không được resample; tất cả cấu hình được đánh giá trên cùng test split. Như vậy, khi so sánh các mô hình của nhóm với nhau, khác biệt về chỉ số phản ánh khác biệt mô hình thay vì khác biệt về tập đánh giá.
 
 \begin{figure}[H]
 \centering
@@ -83,12 +83,12 @@ $\Downarrow$\\
 
 \subsection{Số mẫu trước và sau balancing}
 
-Bảng~\ref{tab:our_balancing_counts} trình bày rõ số mẫu lớp 0 và lớp 1 trong từng giai đoạn. Điểm quan trọng là \textbf{support của test không thay đổi sau balancing}. Đây là khác biệt lớn so với cách support xuất hiện trong Table 5 và Table 7 của tác giả.
+Bảng~\ref{tab:our_balancing_counts} trình bày rõ số mẫu lớp 0 và lớp 1 trong từng giai đoạn. Điểm quan trọng là \textbf{support của test không thay đổi sau balancing}. Đây là khác biệt lớn so với cách support xuất hiện trong Bảng~\ref{tab:compare1} và Bảng~\ref{tab:d2pca} của tác giả.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Số mẫu trong giao thức của nhóm trước và sau balancing}
+\caption{Số mẫu trong phương thức của nhóm trước và sau balancing}
 \label{tab:our_balancing_counts}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrrr}
@@ -108,9 +108,9 @@ Dataset 2 & Sau PCA & 188.768 & 188.768 & 1.061.261 & 47.192 & PCA không thay �
 
 Bảng này là phần bắt buộc để đọc kết quả phía sau. Nếu test bị cân bằng lại, Precision, weighted average và Accuracy có thể thay đổi rất mạnh. Vì vậy, trong báo cáo này, các kết quả của nhóm luôn được hiểu là kết quả trên phân bố test ban đầu.
 
-\section{Tái hiện kết quả theo dạng classification report}
+\section{Tái hiện kết quả}
 
-Để nhất quán với cách tác giả trình bày Table 5 và Table 7, nhóm bổ sung classification report cho pipeline tái hiện cuối cùng. Các bảng dưới đây trình bày Precision, Recall, F1-score và Support theo từng lớp, kèm Accuracy, Macro average và Weighted average.
+Để nhất quán với cách tác giả trình bày Bảng~\ref{tab:compare1} và Bảng~\ref{tab:d2pca}, nhóm bổ sung classification report cho pipeline tái hiện cuối cùng. Các bảng dưới đây trình bày Precision, Recall, F1-score và Support theo từng lớp, kèm Accuracy, Macro average và Weighted average.
 
 \subsection{Dataset 1}
 
@@ -137,14 +137,14 @@ Weighted avg & 0,9451 & 0,7818 & 0,8421 & 1.022\\
 
 So với baseline không balancing, Recall của lớp stroke tăng từ 0,0600 lên 0,7800. Tuy nhiên Precision chỉ đạt 0,1554 do số false positive lớn. Điều này phản ánh bản chất của bài toán mất cân bằng: tăng khả năng bắt ca stroke thường làm giảm độ chính xác trong các cảnh báo dương tính.
 
-\subsubsection{Đối chiếu với \refcite{21}{21} và hai cấu hình trong Table 5}
+\subsubsection{Đối chiếu với \refcite{21}{21} và hai cấu hình trong Bảng~\ref{tab:compare1}}
 
 Để làm rõ ý nghĩa của kết quả tái hiện, Bảng~\ref{tab:d1_table5_benchmark} đặt kết quả \refcite{21}{21}, hai cấu hình (a), (b) của tác giả, pipeline tái hiện và phương án cải tiến của nhóm cạnh nhau. Cột support được giữ trong bảng vì đây là thông tin quyết định việc các metric có thể được so sánh trực tiếp hay chỉ mang tính tham khảo.
 
 \begin{table}[H]
 \centering
 \scriptsize
-\caption{Dataset 1: đối chiếu Table 5 với kết quả tái hiện và cải tiến của nhóm}
+\caption{Dataset 1: đối chiếu Bảng~\ref{tab:compare1} với kết quả tái hiện và cải tiến của nhóm}
 \label{tab:d1_table5_benchmark}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{lrrrrrp{4.8cm}}
@@ -241,9 +241,9 @@ Trên Dataset 2, Recall tăng từ 0,0986 ở baseline lên 0,9944 ở pipeline 
 
 Các kết quả trên cho phép phân biệt rõ vai trò của từng thành phần. Thứ nhất, balancing là cần thiết nếu mục tiêu là phát hiện lớp stroke. Thứ hai, PCA không mặc nhiên cải thiện mọi cấu hình: trên Dataset 1, chỉ thêm PCA vào baseline làm Recall giảm từ 0,0600 xuống 0,0400; lợi ích của PCA phụ thuộc vào pipeline mà nó được kết hợp. Thứ ba, tuning làm thay đổi mạnh điểm vận hành của mô hình, vì vậy cần đánh giá Recall, Precision, F1 và MCC thay vì chỉ Accuracy.
 
-Quan trọng về thuật ngữ: \textbf{SMOTE trên Dataset 1 và random undersampling trên Dataset 2 không phải đề xuất cải tiến của nhóm}; đây là các kỹ thuật balancing đã được tác giả sử dụng và nhóm tái hiện. Thử nghiệm PCA/no-PCA là \textit{ablation}. Các phương pháp thay thế như SMOTENC, cost-sensitive learning và tối ưu threshold mới được xem là phần mở rộng của nhóm.
+\textbf{SMOTE trên Dataset 1 và random undersampling trên Dataset 2 không phải đề xuất cải tiến của nhóm}; đây là các kỹ thuật balancing đã được tác giả sử dụng và nhóm tái hiện. Thử nghiệm PCA/no-PCA là \textit{ablation}. Các phương pháp thay thế như SMOTENC, cost-sensitive learning và tối ưu threshold mới được xem là phần mở rộng của nhóm.
 
-\section{Mở rộng/cải tiến trên cùng giao thức đánh giá}
+\section{Mở rộng/cải tiến trên cùng phương thức đánh giá}
 
 Từ benchmark giữ nguyên test distribution, nhóm thử các lựa chọn thay thế mà không thay đổi test split. Nhờ đó, các kết luận ``cải thiện'' trong phần này là phép so sánh hợp lệ giữa các experiment của nhóm.
 
@@ -320,7 +320,7 @@ Việc hạ threshold có thể đưa Recall lên rất cao nhưng phải trả 
 
 \section{Tổng hợp: tái hiện và cải tiến trên cùng test set}
 
-Bảng~\ref{tab:final_summary} chỉ tổng hợp các kết quả do nhóm thực nghiệm trên \textbf{cùng test split giữ nguyên phân bố lớp}. Kết quả công bố của tác giả không được đưa vào bảng này vì support và giao thức đánh giá không tương đương. Nhờ đó, mọi kết luận tăng/giảm dưới đây đều là so sánh trực tiếp và có cùng mẫu đánh giá.
+Bảng~\ref{tab:final_summary} chỉ tổng hợp các kết quả do nhóm thực nghiệm trên \textbf{cùng test split giữ nguyên phân bố lớp}. Kết quả công bố của tác giả không được đưa vào bảng này vì support và phương thức đánh giá không tương đương. Nhờ đó, mọi kết luận tăng/giảm dưới đây đều là so sánh trực tiếp và có cùng mẫu đánh giá.
 
 \begin{table}[H]
 \centering
@@ -352,6 +352,6 @@ Trên Dataset 1, phương án cải tiến không tối đa hóa Recall bằng m
 
 \section{Hạn chế và hướng cải tiến tiếp theo}
 
-Dataset 1 nhỏ và chỉ có ít trường hợp stroke trong test, nên kết quả nhạy với split. Dataset 2 có quy mô lớn nhưng là dữ liệu synthetic, do đó các chỉ số rất cao cần được diễn giải thận trọng. Quan trọng hơn đối với mục tiêu tái hiện, bài báo không công bố đủ chi tiết để tái dựng chính xác sampling/evaluation protocol; nhóm vì vậy ưu tiên tính minh bạch và khả năng kiểm chứng của giao thức riêng thay vì điều chỉnh pipeline để ép kết quả gần số công bố.
+Dataset 1 nhỏ và chỉ có ít trường hợp stroke trong test, nên kết quả nhạy với split. Dataset 2 có quy mô lớn nhưng là dữ liệu synthetic, do đó các chỉ số rất cao cần được diễn giải thận trọng. Quan trọng hơn đối với mục tiêu tái hiện, bài báo không công bố đủ chi tiết để tái dựng chính xác sampling/evaluation protocol; nhóm vì vậy ưu tiên tính minh bạch và khả năng kiểm chứng của phương thức riêng thay vì điều chỉnh pipeline để ép kết quả gần số công bố.
 
 Vòng cải tiến hiện tại chủ yếu nằm ở chiến lược xử lý mất cân bằng, ablation PCA và lựa chọn threshold. Bước tiếp theo sẽ giữ nguyên train/test split và strict protocol hiện tại để khảo sát các cải tiến ở mức thuật toán hoặc hàm mất mát. Một phương án mới chỉ được kết luận tốt hơn baseline khi được đánh giá trên cùng test, cùng metric và cùng lớp mục tiêu. Mục tiêu ưu tiên là nâng F1/MCC, giảm false positive nhưng vẫn duy trì Recall cao và khả năng giải thích của mô hình.

@@ -1,16 +1,16 @@
 \chapter{THẢO LUẬN}
-Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu. Các kết quả chính đã được mô tả trong phần Kết quả. Để so sánh chi tiết hơn với các công trình hiện có và xác định vị trí của phương pháp đề xuất, chúng tôi bổ sung so sánh với các nghiên cứu liên quan. Cụ thể, Bảng~\ref{tab:studies} so sánh phương pháp của chúng tôi với ba công trình trên Dataset 1.
+Trong bài báo này, phương pháp đề xuất được kiểm thử trên hai tập dữ liệu. Các kết quả chính đã được mô tả trong phần Kết quả. Để so sánh chi tiết hơn với các công trình hiện có và xác định vị trí của phương pháp đề xuất, \textit{chúng tôi} bổ sung so sánh với các nghiên cứu liên quan. Cụ thể, Bảng~\ref{tab:studies} so sánh phương pháp của \textit{chúng tôi} với ba công trình trên Dataset 1.
 
 \begin{table}[H]
 \centering
-\caption{So sánh các phương pháp dự đoán và kết quả trong nghiên cứu của chúng tôi với các nghiên cứu khác}\label{tab:studies}
+\caption{So sánh các phương pháp dự đoán và kết quả trong nghiên cứu của \textit{chúng tôi} với các nghiên cứu khác}\label{tab:studies}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{p{2.2cm}p{5.0cm}p{4.2cm}p{3.2cm}p{4.8cm}}
 \toprule
-\textbf{Thuộc tính} & \textbf{\refcite{18}{18}} & \textbf{\refcite{33}{33}} & \textbf{\refcite{34}{34}} & \textbf{Phương pháp của chúng tôi}\\
+\textbf{Thuộc tính} & \textbf{\refcite{18}{18}} & \textbf{\refcite{33}{33}} & \textbf{\refcite{34}{34}} & \textbf{Phương pháp của \textit{chúng tôi}}\\
 \midrule
 Phương pháp & Hồi quy logistic, cây quyết định, random forest, k-NN, SVM, Naive Bayes & Random Forest, XGBoost, hồi quy logistic, mạng nơ-ron & Random Forest, Naive Bayes, hồi quy logistic & XGBoost kết hợp PCA để giảm chiều, SMOTE để cân bằng dữ liệu\\
-Độ chính xác, \% & 82 & 92.55 & -- & 95\\
+Accuracy, \% & 82 & 92.55 & -- & 95\\
 F1-score & 82.3 & 92.40 & 80 & 94.5\\
 \bottomrule
 \end{tabular}}
