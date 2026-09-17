@@ -15,6 +15,7 @@
 \usepackage{array}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage{etoolbox}
 
 \usetheme{Madrid}
 \setbeamertemplate{navigation symbols}{}
@@ -24,18 +25,66 @@
   \IfFileExists{#1}{\includegraphics[width=#2]{#1}}{\fbox{\parbox[c][0.42\textheight][c]{#2}{\centering Chạy code để sinh hình\\\texttt{\detokenize{#1}}}}}
 }
 
-\title{Dự đoán nguy cơ đột quỵ bằng XGBoost, PCA và XAI}
+% Tiêu đề slide tự đánh số: \slidetitle{Tên slide} hoặc
+% \slidetitle[nhan:xyz]{Tên slide} nếu cần \ref{nhan:xyz} ở nơi khác.
+% Thêm/xóa/đảo slide không cần sửa số thủ công.
+\newcounter{slideno}
+\newcommand{\slidetitle}[2][]{%
+  \refstepcounter{slideno}%
+  \ifblank{#1}{}{\label{#1}}%
+  \theslideno.\ #2%
+}
+
+\newcommand{\Major}{THẠC SĨ KHOA HỌC DỮ LIỆU - QH2025}
+\newcommand{\CourseName}{KHAI PHÁ DỮ LIỆU VÀ HỌC MÁY}
+\newcommand{\SupervisorName}{PGS.TS.TRẦN TRỌNG HIẾU}
+\newcommand{\StudentNameA}{TỐNG VIỆT TÚ - 25007845}
+\newcommand{\StudentNameB}{NGUYỄN THỊ NHẬT LINH - 25007871}
+\newcommand{\ReportYear}{09/2026}
+
+\title{Dự đoán nguy cơ đột quỵ bằng XGBoost, PCA, XAI}
 \subtitle{Tái hiện nghiên cứu Mochurad et al. (2025)}
-\author{Nhóm thực hiện}
-\date{\today}
+\author{\StudentNameA \\ \StudentNameB}
+\date{\ReportYear}
 
 \begin{document}
 
 \begin{frame}
-  \titlepage
+\vfill
+\begin{center}
+  {\normalsize \Major}\\[0.15em]
+  {\normalsize \CourseName}\\[1.6em]
+  {\color{beamer@blendedblue}\LARGE\bfseries \inserttitle}\par
+  \vspace{0.3em}
+  {\color{beamer@blendedblue}\rule{0.55\textwidth}{0.5pt}}\par
+  \vspace{0.5em}
+  {\large\itshape \insertsubtitle}\\[2.2em]
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{r@{\hspace{0.9em}}l}
+    \textbf{Giảng viên hướng dẫn:} & \SupervisorName \\
+    \textbf{Sinh viên thực hiện:} & \StudentNameA \\
+     & \StudentNameB \\
+  \end{tabular}\\[1.8em]
+  \normalsize \ReportYear
+\end{center}
+\vfill
 \end{frame}
 
-\begin{frame}{1. Bài toán và động cơ}
+\begin{frame}{\slidetitle{Mục tiêu và cách tiếp cận của báo cáo}}
+\begin{block}{Đây không phải bản tóm tắt bài báo gốc}
+Báo cáo thực hiện trong khuôn khổ học phần Khai phá dữ liệu: \textbf{tìm hiểu, trình bày lại, tái hiện thực nghiệm và đề xuất cải tiến} cho một công trình đã công bố — không dừng ở việc tóm tắt.
+\end{block}
+\vspace{0.4em}
+\textbf{Mục tiêu cụ thể:}
+\begin{enumerate}
+  \item Trình bày lại có hệ thống nội dung bài báo gốc bằng tiếng Việt (Chương 1--4).
+  \item Tự xây dựng và chạy lại pipeline thực nghiệm để tái lập kết quả tác giả công bố trên hai bộ dữ liệu.
+  \item Đối chiếu có kiểm soát giữa kết quả tác giả và kết quả tái hiện, xác định thành phần cần hiệu chỉnh.
+  \item Sau khi có baseline tái hiện phù hợp, khảo sát hướng cải tiến và đánh giá lợi ích thực nghiệm so với tác giả (Chương 5).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{\slidetitle{Bài toán và động cơ}}
 \begin{itemize}
   \item Mục tiêu: dự đoán sớm nguy cơ đột quỵ từ đặc trưng bệnh nhân.
   \item Khó khăn: \textbf{mất cân bằng lớp}, missing/outlier, quan hệ phi tuyến, yêu cầu giải thích.
@@ -46,13 +95,29 @@
 \end{block}
 \end{frame}
 
-\begin{frame}{2. Hai bộ dữ liệu}
+\begin{frame}{\slidetitle{So sánh các phương pháp học máy hiện có (Bảng 1.1)}}
 \small
-\begin{tabular}{p{0.24\linewidth}p{0.20\linewidth}p{0.48\linewidth}}
+\begin{tabular}{p{0.19\linewidth}p{0.37\linewidth}p{0.37\linewidth}}\toprule
+\textbf{Phương pháp} & \textbf{Ưu điểm} & \textbf{Nhược điểm}\\\midrule
+Hồi quy Logistic & Độ chính xác cao ($>$95\%), dễ triển khai & Hạn chế với quan hệ phi tuyến\\
+Cây quyết định & Trực quan, dễ diễn giải & Dễ overfitting\\
+Random Forest & Độ chính xác cao (96\%), tin cậy & Chậm với dữ liệu lớn\\
+Naive Bayes & Đơn giản, hiệu quả & Chính xác 82\%, hạn chế khi biến phụ thuộc\\
+k-NN & Đơn giản, rõ ràng & Khó mở rộng, nhạy tham số $k$\\
+SVM & Hiệu quả với dữ liệu nhiều chiều & Nhạy tham số, khó với dữ liệu lớn\\
+Học sâu (CNN) & Chính xác cao với ảnh y khoa & Cần dữ liệu lớn, tài nguyên mạnh\\
+ANN & Diễn giải cao (LIME), chính xác 95\% & Phụ thuộc kiểm định trên dữ liệu ngoài\\
+\textbf{XGBoost} & \textbf{Hiệu quả dự báo \& diễn giải cao, $>$97\%} & \textbf{Khó cấu hình tham số, cần tài nguyên}\\\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{\slidetitle{Giới thiệu hai bộ dữ liệu}}
+\small
+\begin{tabular}{p{0.15\linewidth}p{0.28\linewidth}p{0.48\linewidth}}
 \toprule
 \textbf{Bộ dữ liệu} & \textbf{Quy mô} & \textbf{Đặc trưng chính}\\\midrule
-Dataset 1 & 5.110 bản ghi; 249 stroke & age, hypertension, heart disease, glucose, BMI, smoking, work type, gender, residence\\
-Dataset 2 & 5.769.190 bản ghi & Cấu trúc tương tự, dữ liệu tổng hợp quy mô lớn\\
+Dataset 1 & 5,110 bản ghi; 249 stroke & age, hypertension, heart disease, glucose, BMI, smoking, work type, gender, residence\\
+Dataset 2 & 5,769,190 bản ghi & Cấu trúc tương tự, dữ liệu tổng hợp quy mô lớn\\
 \bottomrule
 \end{tabular}
 \vspace{0.5em}
@@ -62,7 +127,7 @@ Dataset 2 & 5.769.190 bản ghi & Cấu trúc tương tự, dữ liệu tổng h
 \end{itemize}
 \end{frame}
 
-\begin{frame}{3. Pipeline của nghiên cứu}
+\begin{frame}{\slidetitle{Pipeline của nghiên cứu}}
 \centering
 \begin{minipage}{0.84\linewidth}
 \begin{enumerate}
@@ -77,7 +142,7 @@ Dataset 2 & 5.769.190 bản ghi & Cấu trúc tương tự, dữ liệu tổng h
 \end{minipage}
 \end{frame}
 
-\begin{frame}{4. PCA: giảm chiều}
+\begin{frame}{\slidetitle{PCA: giảm chiều}}
 \[
 X_c=X-\bar{x},\qquad
 S=\frac{1}{N-1}X_c^TX_c,
@@ -88,11 +153,11 @@ Sv_j=\lambda_jv_j,\qquad X_{\text{reduced}}=X_cV_k.
 \begin{itemize}
   \item Chọn $k$ sao cho cumulative explained variance đạt 95\%.
   \item Theo bài báo Dataset 1: từ \textbf{19} đặc trưng sau xử lý xuống \textbf{13} thành phần.
-  \item Jacobi rotation được song song hóa bằng OpenMP.
+  \item Jacobi rotation được song song hóa bằng OpenMP (Bảng 3.1): thời gian tuần tự \textbf{0.0008801s} $\to$ OpenMP \textbf{0.0006494s}.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{5. XGBoost và hàm mục tiêu}
+\begin{frame}{\slidetitle{XGBoost và hàm mục tiêu}}
 \[
 L(\theta)=\sum_{i=1}^{N}\ell(y_i,\hat y_i(\theta))+\Omega(\theta)
 \]
@@ -106,79 +171,198 @@ L(\theta)=\sum_{i=1}^{N}\ell(y_i,\hat y_i(\theta))+\Omega(\theta)
 \end{itemize}
 \end{frame}
 
-\begin{frame}{6. Kết quả PCA cần tái hiện}
+\begin{frame}{\slidetitle{PCA: phương sai giải thích được (D1)}}
 \begin{columns}[T]
 \column{0.5\textwidth}
 \centering
-\figmaybe{../results/dataset1/balanced_pca95_cumulative_variance.png}{0.95\linewidth}
+\figmaybe{../results/dataset1/03_pca_analysis/cumulative_variance.png}{0.82\linewidth}
 \column{0.5\textwidth}
 \centering
-\figmaybe{../results/dataset1/balanced_pca95_scree_plot.png}{0.95\linewidth}
+\figmaybe{../results/dataset1/03_pca_analysis/explained_variance.png}{0.82\linewidth}
 \end{columns}
+\vspace{0.2em}
+%\tiny (Ảnh minh họa từ pipeline tái hiện của nhóm, tương ứng Hình 3.2--3.3 của bài báo gốc — không phải hình gốc tác giả công bố)
 \end{frame}
 
-\begin{frame}{7. Kết quả Dataset 1 trong bài báo}
+\begin{frame}{\slidetitle{Trọng số đặc trưng trong các thành phần chính (D1)}}
 \begin{columns}[T]
-\column{0.47\textwidth}
+\column{0.52\textwidth}
+\centering
+\tiny Thành phần chính thứ nhất\par
+\figmaybe{../results/dataset1/03_pca_analysis/pc1_loadings.png}{0.85\linewidth}
+\column{0.52\textwidth}
+\centering
+\tiny Thành phần chính thứ hai\par
+\figmaybe{../results/dataset1/03_pca_analysis/pc2_loadings.png}{0.85\linewidth}
+\end{columns}
+\vspace{0.2em}
+\small
 \begin{itemize}
-  \item Accuracy: \textbf{95\%}.
-  \item ROC-AUC trên hình: khoảng \textbf{0.99}.
+  \item PC1 chịu ảnh hưởng lớn bởi \texttt{age}, \texttt{work\_type\_children}, \texttt{smoking\_status\_Unknown}.
+  \item PC2 chịu ảnh hưởng nhiều nhất bởi \texttt{gender} và \texttt{work\_type\_Self-employed}.
+\end{itemize}
+%\tiny (Ảnh minh họa từ pipeline tái hiện của nhóm, tương ứng Hình 3.4--3.5 của bài báo gốc)
+\end{frame}
+
+\begin{frame}{\slidetitle{Kết quả Dataset 1 trong bài báo}}
+\footnotesize
+Bảng 3.4 — so sánh với [21]: (a) chưa cân bằng, (b) đã cân bằng lớp
+\vspace{0.2em}
+\begin{columns}[T]
+\column{0.56\textwidth}
+\begin{tabular}{lccc}\toprule
+\textbf{Chỉ số} & \textbf{[21]} & \textbf{(a)} & \textbf{(b)}\\\midrule
+Precision (0/1) & 0.97 / 0.21 & 0.95 / 0.24 & 0.96 / 0.93\\
+Recall (0/1) & 0.87 / 0.52 & 0.97 / 0.15 & 0.93 / 0.96\\
+F1 (0/1) & 0.92 / 0.29 & 0.96 / 0.18 & 0.94 / 0.95\\
+Accuracy & 0.85 & 0.92 & \textbf{0.95}\\
+Support (0/1) & 960/62 & 960/62 & 976/968\\\bottomrule
+\end{tabular}
+\column{0.42\textwidth}
+\begin{itemize}
   \item 10-fold average accuracy: \textbf{0.9532}.
   \item Confusion matrix: $TN=908$, $FP=68$, $FN=33$, $TP=935$.
+  \item ROC-AUC: khoảng \textbf{0.99} (hình dưới).
 \end{itemize}
-\column{0.53\textwidth}
-\centering
-\figmaybe{../results/dataset1/balanced_pca95_confusion_matrix.png}{0.92\linewidth}
 \end{columns}
+\vspace{0.4em}
+\centering
+\figmaybe{../results/dataset1/04_xgboost_baseline/with_pca/confusion_matrix.png}{0.22\linewidth}\hspace{1.5em}\figmaybe{../results/dataset1/04_xgboost_baseline/with_pca/roc_curve.png}{0.22\linewidth}\\
+%\tiny (Ảnh minh họa từ pipeline tái hiện của nhóm — số liệu gốc trong bài báo xem Ch.5)
 \end{frame}
 
-\begin{frame}{8. Kết quả Dataset 2 trong bài báo}
+\begin{frame}{\slidetitle{Kết quả Dataset 2 trong bài báo}}
 \small
+\centering
+Bảng 3.6 — so sánh không PCA vs có PCA:
 \begin{tabular}{lcc}\toprule
 \textbf{Chỉ số} & \textbf{Không PCA} & \textbf{Có PCA}\\\midrule
+Precision (0/1) & 0.98 / 0.93 & 0.99 / 0.97\\
+Recall (0/1) & 0.92 / 0.98 & 0.97 / 0.99\\
+F1 (0/1) & 0.95 / 0.96 & 0.98 / 0.98\\
 Accuracy & 0.95 & \textbf{0.98}\\
-F1 class 0 & 0.95 & \textbf{0.98}\\
-F1 class 1 & 0.96 & \textbf{0.98}\\
-\bottomrule\end{tabular}
-\vspace{0.5em}
+Support (0/1) & 136,758 / 137,596 & 10,613 / 10,605\\\bottomrule
+\end{tabular}
+\vspace{0.4em}
 \begin{itemize}
-  \item 10-fold CV mean: \textbf{0.99028}.
-  \item MCC: \textbf{0.9634}; Cohen's Kappa: \textbf{0.9632}.
-  \item Confusion matrix có PCA: $TN=6901$, $FP=160$, $FN=71$, $TP=7013$.
+  \item 10-fold CV mean: \textbf{0.99028}; MCC: \textbf{0.9634}; Cohen's Kappa: \textbf{0.9632}.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{9. SHAP: mô hình dự đoán dựa vào đâu?}
+\begin{frame}{\slidetitle{Dataset 2: confusion matrix \& ROC-AUC (có/không PCA)}}
 \begin{columns}[T]
-\column{0.46\textwidth}
+\column{0.5\textwidth}
+\centering \footnotesize Có PCA\par
+\figmaybe{../results/dataset2/04_xgboost_baseline/with_pca/confusion_matrix.png}{0.42\linewidth}
+\figmaybe{../results/dataset2/04_xgboost_baseline/with_pca/roc_curve.png}{0.42\linewidth}
+\column{0.5\textwidth}
+\centering \footnotesize Không PCA\par
+\figmaybe{../results/dataset2/04_xgboost_baseline/without_pca/confusion_matrix.png}{0.42\linewidth}
+\figmaybe{../results/dataset2/04_xgboost_baseline/without_pca/roc_curve.png}{0.42\linewidth}
+\end{columns}
+
+\vspace{0.5em}
+
+\small Confusion matrix:
+\begin{itemize}
+  \item  Có PCA: $TN=6,901,FP=160,FN=71,TP=7,013$; 
+  \item  Không PCA: $TN=6,509,FP=552,FN=105,TP=6,979$.
+%\item (Ảnh minh họa từ pipeline tái hiện của nhóm, tương ứng Hình 3.11--3.14 của bài báo gốc)
+\end{itemize}  
+ % có PCA: $TN=6,901,FP=160,FN=71,TP=7,013$; 
+ 
+  %không PCA: $TN=6,509,FP=552,FN=105,TP=6,979$.
+
+%\begin{itemize}
+%  \tiny
+%  \item Confusion matrix có PCA: $TN=6,901,FP=160,FN=71,TP=7,013$; không PCA: $TN=6,509,FP=552,FN=105,TP=6,979$.
+  %\item (Ảnh minh họa từ pipeline tái hiện của nhóm, tương ứng Hình 3.11--3.14 của bài báo gốc)
+%\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Dataset 2: kiểm định thống kê PCA vs không PCA}}
+\centering
+\begin{block}{Bảng 3.7 — $p$-value của các kiểm định thống kê}
+\begin{tabular}{lc}\toprule
+\textbf{Kiểm định} & \textbf{$p$-value}\\\midrule
+Paired t-test & $\approx 5.48\times10^{-10}$\\
+Mann–Whitney U test & $\approx 1.80\times10^{-4}$\\\bottomrule
+\end{tabular}
+\end{block}
+\vspace{0.5em}
+\begin{itemize}
+  \item Cả hai kiểm định đều cho $p<0.05$ $\Rightarrow$ tác giả kết luận có khác biệt có ý nghĩa thống kê giữa PCA và baseline.
+  \item Đây là bằng chứng tác giả dùng để khẳng định PCA mang lại cải thiện có ý nghĩa (Chương 5 của nhóm sẽ kiểm chứng lại claim này).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{SHAP: mô hình dự đoán dựa vào đâu?}}
+\begin{columns}[T]
+\column{0.5\textwidth}
 \begin{itemize}
   \item Dataset 1: glucose, work type, BMI, age nổi bật.
   \item Dataset 2: age và glucose nổi bật nhất.
   \item Waterfall: giải thích từng quan sát.
   \item Bar/Beeswarm: giải thích toàn cục.
 \end{itemize}
-\column{0.54\textwidth}
+\column{0.58\textwidth}
 \centering
-\figmaybe{../results/dataset1/balanced_no_pca_shap_bar.png}{0.93\linewidth}
+\tiny Dataset 1\par
+\figmaybe{../results/dataset1/07_shap_analysis/shap_projected_original_bar.png}
+{0.55\linewidth}\par
+\tiny Dataset 2\par
+\figmaybe{../results/dataset2/07_shap_analysis/shap_projected_original_bar.png}
+{0.55\linewidth}
 \end{columns}
+%\tiny (Ảnh minh họa từ pipeline tái hiện của nhóm, tương ứng Hình 3.7 và 3.18 của bài báo gốc)
 \end{frame}
 
-\begin{frame}{10. OpenMP và tốc độ}
+\begin{frame}{\slidetitle{OpenMP và tốc độ}}
 \small
 \begin{tabular}{lrrrrr}\toprule
 \textbf{Ma trận} & 100 & 200 & 300 & 400 & 500\\\midrule
 OpenMP & 0.503 & 5.838 & 40.043 & 128.957 & 363.385\\
 Sequential & 0.530 & 7.747 & 62.958 & 218.853 & 549.275\\
 \bottomrule\end{tabular}
-\vspace{0.7em}
+\vspace{0.5em}
 \begin{itemize}
   \item Dataset nhỏ: overhead song song hóa làm lợi ích hạn chế.
   \item Ma trận lớn: khoảng cách thời gian tăng rõ rệt.
-  \item Bài báo báo tổng thời gian 1.50010 s so với 4.52611 s ở công trình tham chiếu.
+  \item Bảng 3.3 — chi tiết từng giai đoạn: tìm trị riêng \textbf{6.25e-05s}, tính hiệp phương sai \textbf{0.00260s}, huấn luyện mô hình \textbf{1.34685s}.
+  \item Tổng thời gian \textbf{1.50010s} so với \textbf{4.52611s} ở công trình tham chiếu [21].
 \end{itemize}
 \end{frame}
 
-\begin{frame}{11. Thiết kế code tái hiện}
+\begin{frame}{\slidetitle{So sánh với các nghiên cứu khác (Chương 4)}}
+\small
+Bảng 4.1 — Dataset 1:
+\begin{tabular}{p{0.14\linewidth}p{0.22\linewidth}p{0.22\linewidth}p{0.11\linewidth}p{0.15\linewidth}}\toprule
+\textbf{Thuộc tính} & \textbf{[18]} & \textbf{[33]} & \textbf{[34]} & \textbf{Chúng tôi}\\\midrule
+Phương pháp & \footnotesize LR, cây quyết định, RF, k-NN, SVM, Naive Bayes & \footnotesize RF, XGBoost, hồi quy logistic, mạng nơ-ron & \footnotesize RF, Naive Bayes, hồi quy logistic & \footnotesize XGBoost + PCA + SMOTE\\
+Accuracy (\%) & 82 & 92.55 & -- & \textbf{95}\\
+F1-score & 82.3 & 92.40 & 80 & \textbf{94.5}\\\bottomrule
+\end{tabular}
+\vspace{0.4em}
+\normalsize
+\begin{itemize}
+  \item Dataset 2: không có nghiên cứu liên quan để so sánh trực tiếp — đánh giá bổ sung bằng MCC (0.9634) và Cohen's Kappa (0.9632).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle[sl:tomluocbaigoc]{Tóm lược bài báo gốc — vấn đề cần kiểm chứng}}
+\begin{itemize}
+  \item XGBoost + PCA + XAI là pipeline hợp lý cho bài toán dự đoán đột quỵ; PCA có thể giảm chiều và tăng tốc, SHAP giúp diễn giải.
+  \item Tuy nhiên, support trong các bảng so sánh của tác giả thay đổi bất thường giữa các cấu hình — về nguyên tắc, PCA/balancing không thể làm đổi số dòng test:
+  \begin{itemize}
+    \small
+    \item D1: (a) 960/62/1,022 $\to$ (b) sau balancing 976/968/\textbf{1,944}.
+    \item D2: without PCA 274,354 $\to$ with PCA \textbf{21,218}.
+  \end{itemize}
+  \item[$\Rightarrow$] Cần một pipeline tái hiện với protocol đánh giá minh bạch để kiểm chứng độc lập các con số này.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Thiết kế code tái hiện}}
 \begin{itemize}
   \item Train/test = 80/20, stratified.
   \item IQR bounds học từ train rồi áp cho test.
@@ -188,12 +372,106 @@ Sequential & 0.530 & 7.747 & 62.958 & 218.853 & 549.275\\
 \end{itemize}
 \end{frame}
 
-\begin{frame}{12. Kết luận}
+% ============================================================
+% PHẦN BỔ SUNG: TÁI HIỆN ĐỘC LẬP CỦA NHÓM (CHƯƠNG 5)
+% ============================================================
+
+\begin{frame}{\slidetitle{Phương thức tái hiện của nhóm}}
+\centering
+\begin{minipage}{0.88\linewidth}
+\textbf{Nguyên tắc đánh giá (Hình 5.1):} chia train/test trước $\to$ mọi bước imputation, encoding, scaling, PCA, balancing chỉ fit trên train $\to$ \textbf{test không được resample} $\to$ mọi cấu hình đánh giá trên cùng test split.
+\end{minipage}
+\vspace{0.6em}
+\small
+\begin{tabular}{lcccc}\toprule
+\textbf{Dataset} & \textbf{Giai đoạn} & \textbf{Train 0} & \textbf{Train 1} & \textbf{Test (0/1)}\\\midrule
+D1 & Sau split & 3,889 & 199 & 972 / 50\\
+D1 & Sau SMOTE & 3,889 & 3,889 & 972 / 50\\
+D2 & Sau split & 4,245,040 & 188,768 & 1,061,261 / 47,192\\
+D2 & Sau undersampling & 188,768 & 188,768 & 1,061,261 / 47,192\\\bottomrule
+\end{tabular}
 \begin{itemize}
-  \item XGBoost + PCA + XAI là pipeline hợp lý cho bài toán dự đoán đột quỵ.
-  \item PCA có thể giảm chiều và tăng tốc, nhưng lợi ích phụ thuộc quy mô dữ liệu.
-  \item SHAP giúp diễn giải nhưng không thay thế kiểm định lâm sàng.
-  \item Mục tiêu thực nghiệm: \textbf{tái hiện và đối chiếu}, không giả định sẽ khớp tuyệt đối số liệu bài báo.
+  \item[$\Rightarrow$] \textbf{Support của test không đổi} sau balancing — khắc phục đúng vấn đề nêu ở Slide~\ref{sl:tomluocbaigoc} (Bảng 5.1–5.3 của báo cáo).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Diễn biến hiệu năng qua các bước xây dựng pipeline}}
+\small
+Bảng 5.7 — trên test giữ nguyên phân bố lớp:
+\begin{tabular}{lccccc}\toprule
+\textbf{D1} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+Baseline, không PCA & 0.9501 & 0.4286 & 0.0600 & 0.1053 & 0.1462\\
+Balancing+PCA+tuning & 0.7818 & 0.1554 & \textbf{0.7800} & \textbf{0.2591} & \textbf{0.2816}\\\bottomrule
+\end{tabular}
+\vspace{0.3em}
+\begin{tabular}{lccccc}\toprule
+\textbf{D2} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+Baseline, không PCA & 0.9612 & 0.9152 & 0.0986 & 0.1780 & 0.2934\\
+Balancing+PCA+tuning & 0.9664 & 0.5590 & \textbf{0.9944} & \textbf{0.7157} & \textbf{0.7322}\\\bottomrule
+\end{tabular}
+\begin{itemize}
+  \item Baseline Accuracy cao (0.95) nhưng Recall chỉ 0.06 — mô hình gần như bỏ sót hết ca stroke.
+  \item Chỉ thêm PCA (chưa balancing) làm Recall D1 giảm tiếp (0.0600$\to$0.0400) — PCA không mặc nhiên có lợi (mục 5.5).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Mở rộng \& tổng hợp trên cùng test set}}
+\small
+Nhóm khảo sát thêm SMOTENC, cost-sensitive learning và lựa chọn threshold trên validation (mục 5.6), rồi tổng hợp trên cùng test set (Bảng 5.11):
+\begin{tabular}{lccccc}\toprule
+\textbf{D1} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+Tái hiện & 0.7818 & 0.1554 & 0.7800 & 0.2591 & 0.2816\\
+\textbf{Cải tiến (Weighted+PCA, Spec.\ 85\%)} & \textbf{0.8434} & \textbf{0.1944} & 0.7000 & \textbf{0.3043} & \textbf{0.3119}\\\bottomrule
+\end{tabular}
+\vspace{0.3em}
+\begin{tabular}{lccccc}\toprule
+\textbf{D2} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+Tái hiện & 0.9664 & 0.5590 & \textbf{0.9944} & 0.7157 & 0.7322\\
+\textbf{Cải tiến (Undersampling+PCA)} & \textbf{0.9847} & \textbf{0.7401} & 0.9886 & \textbf{0.8465} & \textbf{0.8484}\\\bottomrule
+\end{tabular}
+\begin{itemize}
+  \item D1: đánh đổi 0.08 Recall để giảm false positive, tăng F1/MCC.
+  \item D2: Precision, F1, MCC, Accuracy đều tăng, Recall chỉ giảm rất nhẹ.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Thử nghiệm mở rộng: các họ mô hình khác}}
+\small
+Mục 5.9 — CatBoost, LightGBM, Balanced Random Forest, EasyEnsemble, Focal-loss XGBoost trên cùng outer test:
+\begin{tabular}{lccccc}\toprule
+\textbf{D1} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+XGBoost cải tiến & 0.8434 & 0.1944 & 0.7000 & 0.3043 & 0.3119\\
+\textbf{Balanced Random Forest} & \textbf{0.8483} & \textbf{0.2000} & 0.7000 & \textbf{0.3111} & \textbf{0.3184}\\
+CatBoost & 0.7867 & 0.1640 & \textbf{0.8200} & 0.2733 & 0.3036\\\bottomrule
+\end{tabular}
+\vspace{0.3em}
+\begin{tabular}{lccccc}\toprule
+\textbf{D2} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{MCC}\\\midrule
+\textbf{XGBoost+undersampling+PCA} & \textbf{0.9847} & \textbf{0.7401} & 0.9886 & \textbf{0.8465} & \textbf{0.8484}\\
+LightGBM weighted & 0.9587 & 0.5079 & \textbf{0.9926} & 0.6720 & 0.6943\\\bottomrule
+\end{tabular}
+\begin{itemize}
+  \item Kết luận mục 5.9.4: \textbf{không có họ mô hình nào thắng tuyệt đối} trên mọi dataset — lựa chọn tối ưu phụ thuộc cấu trúc/quy mô dữ liệu.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Hạn chế và hướng cải thiện}}
+\begin{itemize}
+  \item Dataset 1 nhỏ, chỉ 50 ca stroke trong test $\to$ kết quả nhạy với cách chia train/test.
+  \item Dataset 2 quy mô lớn nhưng là dữ liệu \emph{synthetic} $\to$ các chỉ số rất cao cần được diễn giải thận trọng.
+  \item Bài báo gốc không công bố đủ chi tiết (thứ tự chia dữ liệu, resampling, tham số) để tái dựng chính xác toàn bộ protocol.
+  \item Nhóm ưu tiên tính minh bạch và khả năng kiểm chứng của phương thức riêng, thay vì cố điều chỉnh pipeline để ép kết quả khớp số liệu công bố.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\slidetitle{Kết luận}}
+\begin{itemize}
+  \item Accuracy không đủ để đánh giá mô hình trong bài toán mất cân bằng; cần xem xét đồng thời Recall, F1-score, MCC và ROC-AUC.
+  \item Bài báo gốc chưa mô tả đầy đủ thứ tự chia dữ liệu, resampling, PCA và các tham số thực nghiệm.
+  \item Nhóm xây dựng một protocol minh bạch hơn: chia train/test trước, chỉ thực hiện preprocessing/balancing trên train, giữ nguyên phân bố lớp của test để tránh rò rỉ dữ liệu.
+  \item Kết hợp balancing, PCA, tuning và lựa chọn operating threshold giúp tăng đáng kể khả năng phát hiện lớp stroke.
+  \item D1: Balanced Random Forest cải thiện nhẹ F1-score và MCC so với XGBoost có trọng số. D2: XGBoost kết hợp undersampling và PCA vẫn cho sự cân bằng tốt nhất giữa Precision, Recall, F1-score và MCC; LightGBM đạt Recall cao hơn nhưng Precision thấp hơn.
+  \item Không có một mô hình duy nhất tốt nhất trên mọi bộ dữ liệu — hiệu quả dự đoán phụ thuộc vào protocol đánh giá, phương pháp xử lý mất cân bằng và ngưỡng quyết định.
 \end{itemize}
 \end{frame}
 

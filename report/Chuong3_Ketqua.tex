@@ -84,7 +84,7 @@ Hình~\ref{fig:pc1} minh họa trọng số của các đặc trưng trong thàn
 		\label{fig:pc2}
 	\end{minipage}
 	
-\end{figure}\\
+\end{figure}\
 
 Các tập dữ liệu y tế có những vấn đề đặc thù như mất cân bằng lớp do tính hiếm của ca bệnh, giá trị thiếu do hồ sơ không đầy đủ và ngoại lệ do sai số đo lường hoặc các tình huống y khoa đặc biệt. Dữ liệu nhiều chiều và nhu cầu diễn giải quyết định của mô hình làm phân tích trở nên khó khăn, đòi hỏi các phương pháp chuyên biệt; nếu không, dự báo có thể không chính xác hoặc sai lệch. Mô hình của \textit{chúng tôi} xử lý các vấn đề đặc thù này. Chẳng hạn, mất cân bằng lớp được giải quyết bằng SMOTE và giảm ngẫu nhiên lớp đa số để tránh thiên lệch. Dữ liệu thiếu được điền bằng giá trị trung bình và ngoại lệ được xử lý bằng phương pháp IQR để giảm tác động của nhiễu. PCA giảm chiều trong khi duy trì 95\% biến thiên, qua đó tăng tốc tính toán và cải thiện độ chính xác. Ngoài ra, nghiên cứu áp dụng công cụ XAI SHAP, cho phép phân tích chi tiết tác động của phương pháp PCA lên từng trường hợp riêng lẻ trong mẫu.
 
